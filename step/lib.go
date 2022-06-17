@@ -60,7 +60,7 @@ func (s SimulatorStarter) getSimulatorForDestination(destinationSpecifier string
 }
 
 func (s SimulatorStarter) WaitForSimulatorBoot(id string) error {
-	const timeout = time.Second * 180
+	const timeout = time.Second * 60
 
 	timer := time.NewTimer(timeout)
 	defer func() {
