@@ -1,0 +1,6 @@
+bitrise-step-xcode-start-simulator
+.bitrise*
+_tmp/
+.vscode/
+.idea
+.DS_Store

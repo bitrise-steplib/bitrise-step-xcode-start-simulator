@@ -1,0 +1,25 @@
+format_version: "11"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+workflows:
+  test_default:
+    after_run:
+    - _run
+    - _check_outputs
+
+  _run:
+    steps:
+    - path::./: {}
+
+  _check_outputs:
+    steps:
+    - git::https://github.com/bitrise-steplib/bitrise-step-check-step-outputs.git@main:
+        is_always_run: true
+        inputs:
+        - envs: |-
+            BITRISE_IS_SIMULATOR_ERROR
+        - files:
+        - dirs:
+        - deploy_dir:
+        - deployed_files:
+        - deployed_dirs:

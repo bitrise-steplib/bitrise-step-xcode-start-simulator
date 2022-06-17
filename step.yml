@@ -1,0 +1,43 @@
+title: |-
+  Start Xcode Simulator
+summary: |
+  Starts an Xcode Simulator.
+description: |
+  Starts an Xcode Simulator.
+website: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator
+source_code_url: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator
+support_url: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator/issues
+project_type_tags:
+- ios
+- xamarin
+- react-native
+- cordova
+- ionic
+type_tags:
+- utility
+is_always_run: false
+is_skippable: false
+deps:
+  check_only:
+  - name: xcode
+toolkit:
+  go:
+    package_name: github.com/bitrise-steplib/bitrise-step-xcode-start-simulator
+inputs:
+  - destination: platform=iOS Simulator,name=iPhone 8 Plus,OS=latest
+    opts:
+      title: Device destination specifier
+      summary: Destination specifier describes the simulator device to be started.
+      description: |-
+        Destination specifier describes the simulator device to be started.
+
+        The input value uses the same format as xcodebuild's `-destination` option.
+      is_required: true
+
+outputs:
+  - BITRISE_IS_SIMULATOR_ERROR:
+    opts:
+      title: Set to true/false based if starting Xcode Simulator failed with an unrecoverable error.
+      description: |
+        Set to true/false based if starting Xcode Simulator failed with an unrecoverable error.
+
