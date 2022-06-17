@@ -2,7 +2,9 @@ package step
 
 import (
 	"github.com/bitrise-io/go-steputils/v2/stepconf"
+	"github.com/bitrise-io/go-utils/v2/command"
 	"github.com/bitrise-io/go-utils/v2/log"
+	"github.com/bitrise-steplib/steps-xcode-test/simulator"
 )
 
 type Input struct {
@@ -19,14 +21,18 @@ type Result struct {
 }
 
 type SimulatorStarter struct {
-	logger      log.Logger
-	inputParser stepconf.InputParser
+	logger         log.Logger
+	inputParser    stepconf.InputParser
+	commandFactory command.Factory
+	manager        simulator.Manager
 }
 
-func NewStep(logger log.Logger, inputParser stepconf.InputParser) SimulatorStarter {
+func NewStep(logger log.Logger, inputParser stepconf.InputParser, commandFactory command.Factory, simualatorManager simulator.Manager) SimulatorStarter {
 	return SimulatorStarter{
-		logger:      logger,
-		inputParser: inputParser,
+		logger:         logger,
+		inputParser:    inputParser,
+		commandFactory: commandFactory,
+		manager:        simualatorManager,
 	}
 }
 
