@@ -1,8 +1,11 @@
 package step
 
 import (
+	"fmt"
+
 	"github.com/bitrise-io/go-steputils/v2/stepconf"
 	"github.com/bitrise-io/go-utils/v2/command"
+	"github.com/bitrise-io/go-utils/v2/env"
 	"github.com/bitrise-io/go-utils/v2/log"
 	"github.com/bitrise-steplib/steps-xcode-test/simulator"
 )
@@ -21,18 +24,20 @@ type Result struct {
 }
 
 type SimulatorStarter struct {
-	logger         log.Logger
-	inputParser    stepconf.InputParser
-	commandFactory command.Factory
-	manager        simulator.Manager
+	logger            log.Logger
+	inputParser       stepconf.InputParser
+	stepenvRepository env.Repository
+	commandFactory    command.Factory
+	simulatorManager  simulator.Manager
 }
 
-func NewStep(logger log.Logger, inputParser stepconf.InputParser, commandFactory command.Factory, simualatorManager simulator.Manager) SimulatorStarter {
+func NewStep(logger log.Logger, inputParser stepconf.InputParser, stepenvRepository env.Repository, commandFactory command.Factory, simualatorManager simulator.Manager) SimulatorStarter {
 	return SimulatorStarter{
-		logger:         logger,
-		inputParser:    inputParser,
-		commandFactory: commandFactory,
-		manager:        simualatorManager,
+		logger:            logger,
+		inputParser:       inputParser,
+		commandFactory:    commandFactory,
+		simulatorManager:  simualatorManager,
+		stepenvRepository: stepenvRepository,
 	}
 }
 
@@ -45,8 +50,13 @@ func (s SimulatorStarter) ProcessConfig() (Config, error) {
 	stepconf.Print(input)
 	s.logger.Println()
 
+	sim, err := s.getSimulatorForDestination(input.Destination)
+	if err != nil {
+		return Config{}, err
+	}
+
 	return Config{
-		SimulatorID: "",
+		SimulatorID: sim.ID,
 	}, nil
 }
 
@@ -55,9 +65,49 @@ func (s SimulatorStarter) InstallDependencies() error {
 }
 
 func (s SimulatorStarter) Run(config Config) (Result, error) {
+	err := s.prepareSimulator(true, config.SimulatorID)
+	if err != nil {
+		return Result{
+			IsSimulatorTimeout: true,
+		}, err
+	}
+
 	return Result{}, nil
 }
 
-func (s SimulatorStarter) ExportOtputs(result Result) error {
+func (s SimulatorStarter) ExportOutputs(result Result) error {
+	err := s.stepenvRepository.Set("BITRISE_IS_SIMULATOR_ERROR", fmt.Sprintf("%t", result.IsSimulatorTimeout))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s SimulatorStarter) prepareSimulator(enableSimulatorVerboseLog bool, simulatorID string) error {
+	err := s.simulatorManager.ResetLaunchServices()
+	if err != nil {
+		s.logger.Warnf("Failed to apply simulator boot workaround: %s", err)
+	}
+
+	if err := s.simulatorManager.SimulatorShutdown(simulatorID); err != nil {
+		return err
+	}
+
+	if err := s.simulatorManager.SimulatorBoot(simulatorID); err != nil {
+		return err
+	}
+
+	if err := s.WaitForSimulatorBoot(simulatorID); err != nil {
+		return err
+	}
+
+	if enableSimulatorVerboseLog {
+		s.logger.Infof("Enabling Simulator verbose log for better diagnostics")
+		if err := s.simulatorManager.SimulatorEnableVerboseLog(simulatorID); err != nil {
+			return fmt.Errorf("%w", err)
+		}
+	}
+
 	return nil
 }

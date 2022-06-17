@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/bitrise-io/go-steputils/v2/stepconf"
+	"github.com/bitrise-io/go-steputils/v2/stepenv"
 	"github.com/bitrise-io/go-utils/v2/command"
 	"github.com/bitrise-io/go-utils/v2/env"
 	"github.com/bitrise-io/go-utils/v2/log"
@@ -26,15 +27,15 @@ func run() int {
 	}
 
 	result, runErr := simulatorStarter.Run(config)
-	exportErr := simulatorStarter.ExportOtputs(result)
+	exportErr := simulatorStarter.ExportOutputs(result)
 
 	if runErr != nil {
-		logger.Errorf("Run: %s", err)
+		logger.Errorf("Run: %s", runErr)
 		return 1
 	}
 
 	if exportErr != nil {
-		logger.Errorf("Export outputs: %s", err)
+		logger.Errorf("Export outputs: %s", exportErr)
 		return 1
 	}
 
@@ -46,6 +47,7 @@ func createStep(logger log.Logger) step.SimulatorStarter {
 	inputParser := stepconf.NewInputParser(envRepository)
 	commandFactory := command.NewFactory(envRepository)
 	simulatorManager := simulator.NewManager(commandFactory)
+	stepenvRepository := stepenv.NewRepository(envRepository)
 
-	return step.NewStep(logger, inputParser, commandFactory, simulatorManager)
+	return step.NewStep(logger, inputParser, stepenvRepository, commandFactory, simulatorManager)
 }
