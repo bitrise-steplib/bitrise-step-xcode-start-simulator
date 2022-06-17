@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bitrise-io/go-utils/errorutil"
 	"github.com/bitrise-io/go-utils/retry"
 	"github.com/bitrise-io/go-utils/v2/command"
 	"github.com/bitrise-io/go-xcode/v2/destination"
@@ -68,30 +67,26 @@ func (s SimulatorStarter) WaitForSimulatorBoot(id string) error {
 		timer.Stop()
 	}()
 
-	waitCmd := s.commandFactory.Create("xcrun", []string{"simctl", "launch", id, "com.apple.mobileslideshow"}, &command.Opts{
-		Stdout: os.Stderr,
-		Stderr: os.Stderr,
-	})
 	launchDoneCh := make(chan error, 1)
-
 	doWait := func() {
+		waitCmd := s.commandFactory.Create("xcrun", []string{"simctl", "launch", id, "com.apple.Preferences"}, &command.Opts{
+			Stdout: os.Stderr,
+			Stderr: os.Stderr,
+		})
+
 		s.logger.Println()
 		s.logger.TDonef("$ %s", waitCmd.PrintableCommandArgs())
 		launchDoneCh <- waitCmd.Run()
 	}
+
 	go doWait()
 
 	for {
 		select {
 		case err := <-launchDoneCh:
 			{
-				if err != nil { // error or timeout
-					if errorutil.IsExitStatusError(err) {
-						s.logger.Warnf("launch failed, restarting")
-						go doWait() // restart wait
-						continue
-					}
-					return err
+				if err != nil {
+					return fmt.Errorf("failed to wait for simulator boot: %w", err)
 				}
 				return nil // launch succeeded
 			}
