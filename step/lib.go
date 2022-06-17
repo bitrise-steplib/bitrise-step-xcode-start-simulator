@@ -76,7 +76,7 @@ func (s SimulatorStarter) WaitForSimulatorBoot(id string) error {
 
 	doWait := func() {
 		s.logger.Println()
-		s.logger.Donef("$ %s", waitCmd.PrintableCommandArgs())
+		s.logger.TDonef("$ %s", waitCmd.PrintableCommandArgs())
 		launchDoneCh <- waitCmd.Run()
 	}
 	go doWait()

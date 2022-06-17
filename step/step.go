@@ -94,13 +94,17 @@ func (s SimulatorStarter) prepareSimulator(enableSimulatorVerboseLog bool, simul
 		return err
 	}
 
+	s.logger.TDonef("Booting Simulator...")
 	if err := s.simulatorManager.SimulatorBoot(simulatorID); err != nil {
 		return err
 	}
 
+	s.logger.TDonef("Waiting for simulator to boot...")
 	if err := s.WaitForSimulatorBoot(simulatorID); err != nil {
 		return err
 	}
+
+	s.logger.TDonef("Successfully started Simulator.")
 
 	if enableSimulatorVerboseLog {
 		s.logger.Infof("Enabling Simulator verbose log for better diagnostics")
