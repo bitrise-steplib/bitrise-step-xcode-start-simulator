@@ -8,6 +8,7 @@ import (
 	"github.com/bitrise-io/go-utils/v2/command"
 	"github.com/bitrise-io/go-utils/v2/env"
 	"github.com/bitrise-io/go-utils/v2/log"
+	"github.com/bitrise-io/go-xcode/v2/destination"
 	"github.com/bitrise-steplib/bitrise-step-xcode-start-simulator/step"
 	"github.com/bitrise-steplib/steps-xcode-test/simulator"
 )
@@ -46,8 +47,9 @@ func createStep(logger log.Logger) step.SimulatorStarter {
 	envRepository := env.NewRepository()
 	inputParser := stepconf.NewInputParser(envRepository)
 	commandFactory := command.NewFactory(envRepository)
+	deviceFinder := destination.NewDeviceFinder(logger, commandFactory)
 	simulatorManager := simulator.NewManager(commandFactory)
 	stepenvRepository := stepenv.NewRepository(envRepository)
 
-	return step.NewStep(logger, inputParser, stepenvRepository, commandFactory, simulatorManager)
+	return step.NewStep(logger, inputParser, stepenvRepository, commandFactory, deviceFinder, simulatorManager)
 }
