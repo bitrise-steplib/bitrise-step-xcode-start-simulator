@@ -5,14 +5,14 @@ go 1.17
 require (
 	github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.2
 	github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.7
-	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.18.0.20220620165100-de2c40b06128
-	github.com/bitrise-steplib/steps-xcode-test v0.0.0-20220601120958-d084e66c1726
+	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.19
 )
 
 require (
 	github.com/bitrise-io/go-steputils v1.0.2 // indirect
 	github.com/bitrise-io/go-utils v1.0.2 // indirect
 	github.com/bitrise-io/go-xcode v1.0.9 // indirect
+	github.com/bitrise-steplib/steps-xcode-test v0.0.0-20220601120958-d084e66c1726 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.1 // indirect
 	github.com/hashicorp/go-version v1.5.0 // indirect

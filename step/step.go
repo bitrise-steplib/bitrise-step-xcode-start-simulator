@@ -2,13 +2,14 @@ package step
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/bitrise-io/go-steputils/v2/stepconf"
 	"github.com/bitrise-io/go-utils/v2/command"
 	"github.com/bitrise-io/go-utils/v2/env"
 	"github.com/bitrise-io/go-utils/v2/log"
 	"github.com/bitrise-io/go-xcode/v2/destination"
-	"github.com/bitrise-steplib/steps-xcode-test/simulator"
+	"github.com/bitrise-io/go-xcode/v2/simulator"
 )
 
 type Input struct {
@@ -93,25 +94,32 @@ func (s SimulatorStarter) prepareSimulator(enableSimulatorVerboseLog bool, simul
 		s.logger.Warnf("Failed to apply simulator boot workaround: %s", err)
 	}
 
-	if err := s.simulatorManager.SimulatorShutdown(simulatorID); err != nil {
+	if err := s.simulatorManager.Shutdown(simulatorID); err != nil {
+		return err
+	}
+	if err := s.simulatorManager.Erase(simulatorID); err != nil {
 		return err
 	}
 
+	s.logger.Println()
 	s.logger.TDonef("Booting Simulator...")
-	if err := s.simulatorManager.SimulatorBoot(simulatorID); err != nil {
+	if err := s.simulatorManager.Boot(simulatorID); err != nil {
 		return err
 	}
 
+	s.logger.Println()
 	s.logger.TDonef("Waiting for simulator to boot...")
-	if err := s.WaitForSimulatorBoot(simulatorID); err != nil {
+	const timeout = time.Second * 60
+	if err := s.simulatorManager.WaitForBootFinished(simulatorID, timeout); err != nil {
 		return err
 	}
 
+	s.logger.Println()
 	s.logger.TDonef("Successfully started Simulator.")
 
 	if enableSimulatorVerboseLog {
 		s.logger.Infof("Enabling Simulator verbose log for better diagnostics")
-		if err := s.simulatorManager.SimulatorEnableVerboseLog(simulatorID); err != nil {
+		if err := s.simulatorManager.EnableVerboseLog(simulatorID); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}
