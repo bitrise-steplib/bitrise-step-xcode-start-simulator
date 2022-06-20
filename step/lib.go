@@ -17,7 +17,7 @@ func (s SimulatorStarter) getSimulatorForDestination(destinationSpecifier string
 		return destination.Device{}, fmt.Errorf("invalid destination specifier (%s): %w", destinationSpecifier, err)
 	}
 
-	device, err = s.deviceFinder.GetSimulator(*simulatorDestination)
+	device, err = s.deviceFinder.FindDevice(*simulatorDestination)
 	if err != nil {
 		return destination.Device{}, fmt.Errorf("simulator UDID lookup failed: %w", err)
 	}

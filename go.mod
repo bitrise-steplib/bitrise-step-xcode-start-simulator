@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.2
 	github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.7
-	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.18.0.20220620142239-8c2168077d0f
+	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.18.0.20220620165100-de2c40b06128
 	github.com/bitrise-steplib/steps-xcode-test v0.0.0-20220601120958-d084e66c1726
 )
 
