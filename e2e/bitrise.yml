@@ -12,9 +12,8 @@ workflows:
     - path::./:
         inputs:
         - destination: platform=iOS Simulator,name=iPhone 8,OS=13.7
-        - erase: true
-        - wait_for_boot: false
-        - wait_for_boot_timeout: 5
+        - erase: "yes"
+        - wait_for_boot: "yes"
 
   _check_outputs:
     steps:
@@ -23,6 +22,7 @@ workflows:
         inputs:
         - envs: |-
             BITRISE_IS_SIMULATOR_TIMEOUT
+            BITRISE_XCODE_DESTINATION
         - files:
         - dirs:
         - deploy_dir:
