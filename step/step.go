@@ -110,16 +110,16 @@ func (s SimulatorStarter) Run(config Config) (Result, error) {
 
 func (s SimulatorStarter) ExportOutputs(result Result) error {
 	const (
-		isSimErrorKey  = "BITRISE_IS_SIMULATOR_TIMEOUT"
-		destinationKey = "BITRISE_XCODE_DESTINATION"
+		isSimTimeoutKey = "BITRISE_IS_SIMULATOR_TIMEOUT"
+		destinationKey  = "BITRISE_XCODE_DESTINATION"
 	)
 
 	s.logger.Println()
 	s.logger.Donef("Exporting ouputs")
 
 	isTimeout := fmt.Sprintf("%t", result.IsSimulatorTimeout)
-	s.logger.Infof("Output %s = %s", isSimErrorKey, isTimeout)
-	if err := s.stepenvRepository.Set(isSimErrorKey, isTimeout); err != nil {
+	s.logger.Infof("Output %s = %s", isSimTimeoutKey, isTimeout)
+	if err := s.stepenvRepository.Set(isSimTimeoutKey, isTimeout); err != nil {
 		return err
 	}
 
