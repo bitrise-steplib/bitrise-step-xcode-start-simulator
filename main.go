@@ -30,17 +30,18 @@ func run() int {
 	result, runErr := simulatorStarter.Run(config)
 	exportErr := simulatorStarter.ExportOutputs(result)
 
+	exitCode := 0
 	if runErr != nil {
 		logger.Errorf("Run: %s", runErr)
-		return 1
+		exitCode = 1
 	}
 
 	if exportErr != nil {
 		logger.Errorf("Export outputs: %s", exportErr)
-		return 1
+		exitCode = 1
 	}
 
-	return 0
+	return exitCode
 }
 
 func createStep(logger log.Logger) step.SimulatorStarter {
