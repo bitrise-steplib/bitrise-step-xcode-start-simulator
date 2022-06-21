@@ -55,7 +55,7 @@ Detect if simulator timed out and restart the build:
 | --- | --- | --- | --- |
 | `destination` | Destination specifier describes the simulator device to be started.  The input value uses the same format as xcodebuild's `-destination` option. | required | `platform=iOS Simulator,name=iPhone 8 Plus,OS=latest` |
 | `erase` | If enabled, will erase a simulator's contents and settings. | required | `no` |
-| `wait_for_boot` | If set, will wait simulator boot to complete.  Setting to `yes` makes possible to detect hangs or timeouts when booting simulator. If a timeout occurs, the `BITRISE_IS_SIMULATOR_TIMEOUT` output will be set to true.  Using `no` (the default) enables to boot the Simulator parallel to other Steps. | required | `no` |
+| `wait_for_boot` | If enabled, will wait simulator boot to complete.  Setting to `yes` makes possible to detect hangs or timeouts when booting simulator. If a timeout occurs, the `BITRISE_IS_SIMULATOR_TIMEOUT` output will be set to true.  Using `no` (the default) enables to boot the Simulator parallel to other Steps. | required | `no` |
 | `verbose_log` | If this input is set, the Step will print additional logs for debugging. | required | `no` |
 | `wait_for_boot_timeout` | Maximum allowed time for simulator boot (in seconds)  "Wait for simulator to boot" (`wait_for_boot`) must be set to `yes`. | required | `90` |
 </details>

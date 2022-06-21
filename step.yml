@@ -50,7 +50,7 @@ inputs:
     title: Wait for simulator to boot
     summary: If enabled, will wait simulator boot to complete.
     description: |-
-      If set, will wait simulator boot to complete.
+      If enabled, will wait simulator boot to complete.
 
       Setting to `yes` makes possible to detect hangs or timeouts when booting simulator.
       If a timeout occurs, the `BITRISE_IS_SIMULATOR_TIMEOUT` output will be set to true.
@@ -75,6 +75,7 @@ inputs:
 
 - wait_for_boot_timeout: 90
   opts:
+    category: Debugging
     title: Simulator boot timeout
     summary: Maximum allowed time for simulator boot (in seconds)
     description: |-
