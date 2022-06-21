@@ -17,10 +17,10 @@ var errTimeout = errors.New("simulator boot timed out")
 
 type Input struct {
 	Destination string `env:"destination,required"`
-	Erase       bool   `env:"erase,required"`
-	WaitForBoot bool   `env:"wait_for_boot,required"`
+	Erase       bool   `env:"erase,opt[yes,no]"`
+	WaitForBoot bool   `env:"wait_for_boot,opt[yes,no]"`
 	// Debugging
-	DebugLog           bool `env:"verbose_log,required"`
+	DebugLog           bool `env:"verbose_log,opt[yes,no]"`
 	WaitForBootTimeout int  `env:"wait_for_boot_timeout,required"`
 }
 
