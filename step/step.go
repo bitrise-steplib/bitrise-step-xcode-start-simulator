@@ -88,6 +88,25 @@ func (s SimulatorStarter) ExportOutputs(result Result) error {
 	return nil
 }
 
+func (s SimulatorStarter) getSimulatorForDestination(destinationSpecifier string) (destination.Device, error) {
+	var device destination.Device
+
+	simulatorDestination, err := destination.NewSimulator(destinationSpecifier)
+	if err != nil || simulatorDestination == nil {
+		return destination.Device{}, fmt.Errorf("invalid destination specifier (%s): %w", destinationSpecifier, err)
+	}
+
+	device, err = s.deviceFinder.FindDevice(*simulatorDestination)
+	if err != nil {
+		return destination.Device{}, fmt.Errorf("simulator UDID lookup failed: %w", err)
+	}
+
+	s.logger.Infof("Simulator info")
+	s.logger.Printf("* simulator_name: %s, version: %s, UDID: %s, status: %s", device.Name, device.OS, device.ID, device.Status)
+
+	return device, nil
+}
+
 func (s SimulatorStarter) prepareSimulator(enableSimulatorVerboseLog bool, simulatorID string) error {
 	err := s.simulatorManager.ResetLaunchServices()
 	if err != nil {
@@ -109,7 +128,8 @@ func (s SimulatorStarter) prepareSimulator(enableSimulatorVerboseLog bool, simul
 
 	s.logger.Println()
 	s.logger.TDonef("Waiting for simulator to boot...")
-	const timeout = time.Second * 60
+
+	const timeout = time.Second * 70
 	if err := s.simulatorManager.WaitForBootFinished(simulatorID, timeout); err != nil {
 		return err
 	}
