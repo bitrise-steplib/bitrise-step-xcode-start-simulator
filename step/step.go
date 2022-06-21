@@ -14,11 +14,17 @@ import (
 
 type Input struct {
 	Destination string `env:"destination,required"`
+	Erase       bool   `env:"erase,required"`
+	WaitForBoot bool   `env:"wait_for_boot,required"`
+	// Debugging
+	DebugLog           bool `env:"verbose_log,required"`
+	WaitForBootTimeout int  `env:"wait_for_boot_timeout,required"`
 }
 
 type Config struct {
-	SimulatorID       string
-	IsSimulatorBooted bool
+	Input
+
+	SimulatorID string
 }
 
 type Result struct {
@@ -53,6 +59,7 @@ func (s SimulatorStarter) ProcessConfig() (Config, error) {
 
 	stepconf.Print(input)
 	s.logger.Println()
+	s.logger.EnableDebugLog(input.DebugLog)
 
 	sim, err := s.getSimulatorForDestination(input.Destination)
 	if err != nil {
@@ -60,6 +67,7 @@ func (s SimulatorStarter) ProcessConfig() (Config, error) {
 	}
 
 	return Config{
+		Input:       input,
 		SimulatorID: sim.ID,
 	}, nil
 }
@@ -69,7 +77,7 @@ func (s SimulatorStarter) InstallDependencies() error {
 }
 
 func (s SimulatorStarter) Run(config Config) (Result, error) {
-	err := s.prepareSimulator(true, config.SimulatorID)
+	err := s.prepareSimulator(config)
 	if err != nil {
 		return Result{
 			IsSimulatorTimeout: true,
@@ -107,39 +115,42 @@ func (s SimulatorStarter) getSimulatorForDestination(destinationSpecifier string
 	return device, nil
 }
 
-func (s SimulatorStarter) prepareSimulator(enableSimulatorVerboseLog bool, simulatorID string) error {
+func (s SimulatorStarter) prepareSimulator(config Config) error {
 	err := s.simulatorManager.ResetLaunchServices()
 	if err != nil {
 		s.logger.Warnf("Failed to apply simulator boot workaround: %s", err)
 	}
 
-	if err := s.simulatorManager.Shutdown(simulatorID); err != nil {
-		return err
-	}
-	if err := s.simulatorManager.Erase(simulatorID); err != nil {
-		return err
-	}
-
-	s.logger.Println()
-	s.logger.TDonef("Booting Simulator...")
-	if err := s.simulatorManager.Boot(simulatorID); err != nil {
-		return err
+	if config.Erase {
+		s.logger.Donef("Erasing simulator...")
+		if err := s.simulatorManager.Shutdown(config.SimulatorID); err != nil {
+			return err
+		}
+		if err := s.simulatorManager.Erase(config.SimulatorID); err != nil {
+			return err
+		}
 	}
 
 	s.logger.Println()
-	s.logger.TDonef("Waiting for simulator to boot...")
-
-	const timeout = time.Second * 70
-	if err := s.simulatorManager.WaitForBootFinished(simulatorID, timeout); err != nil {
+	s.logger.TDonef("Booting simulator...")
+	if err := s.simulatorManager.Boot(config.SimulatorID); err != nil {
 		return err
 	}
 
-	s.logger.Println()
-	s.logger.TDonef("Successfully started Simulator.")
+	if config.WaitForBoot {
+		s.logger.Println()
+		s.logger.TDonef("Waiting for simulator to boot...")
 
-	if enableSimulatorVerboseLog {
-		s.logger.Infof("Enabling Simulator verbose log for better diagnostics")
-		if err := s.simulatorManager.EnableVerboseLog(simulatorID); err != nil {
+		timeout := time.Duration(config.WaitForBootTimeout) * time.Second
+		if err := s.simulatorManager.WaitForBootFinished(config.SimulatorID, timeout); err != nil {
+			return err
+		}
+
+		s.logger.Println()
+		s.logger.TDonef("Successfully started simulator.")
+
+		s.logger.Infof("Enabling simulator verbose log for better diagnostics")
+		if err := s.simulatorManager.EnableVerboseLog(config.SimulatorID); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}

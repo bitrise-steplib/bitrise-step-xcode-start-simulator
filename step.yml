@@ -1,9 +1,9 @@
 title: |-
-  Start Xcode Simulator
+  Start Xcode simulator
 summary: |
-  Starts an Xcode Simulator.
+  Starts an Xcode simulator.
 description: |
-  Starts an Xcode Simulator.
+  Starts an Xcode simulator.
 website: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator
 source_code_url: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator
 support_url: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator/issues
@@ -32,6 +32,55 @@ inputs:
         Destination specifier describes the simulator device to be started.
 
         The input value uses the same format as xcodebuild's `-destination` option.
+      is_required: true
+
+  - erase: "no"
+    opts:
+      title: Erase Simulator before use
+      summary: If enabled, will erase a simulator's contents and settings.
+      description: |-
+        If enabled, will erase a simulator's contents and settings.
+      value_options:
+      - "yes"
+      - "no"
+      is_required: true
+
+  - wait_for_boot: "no"
+    opts:
+      title: Wait for simulator to boot
+      summary: If enabled, will wait simulator boot to complete.
+      description: |-
+        If set, will wait simulator boot to complete.
+
+        Setting to `yes` makes possible to detect hangs or timeouts when booting simulator.
+        If a timeout occurs, the `BITRISE_IS_SIMULATOR_ERROR` output will be set to true.
+
+        Using `no` (the default) enables to boot the Simulator parallel to other Steps.
+      value_options:
+      - "yes"
+      - "no"
+      is_required: true
+
+  # Debugging
+
+  - verbose_log: "no"
+    opts:
+      category: Debugging
+      title: Enable verbose logging
+      summary: If this input is set, the Step will print additional logs for debugging.
+      value_options:
+      - "yes"
+      - "no"
+      is_required: true
+
+  - wait_for_boot_timeout: 70
+    opts:
+      title: Simulator boot timeout
+      summary: Maximum allowed time for simulator boot (in seconds)
+      description: |-
+        Maximum allowed time for simulator boot (in seconds)
+
+        "Wait for simulator to boot" (`wait_for_boot`) must be set to `yes`.
       is_required: true
 
 outputs:
