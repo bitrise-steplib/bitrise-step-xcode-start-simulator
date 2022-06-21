@@ -10,31 +10,37 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSimulatorStarter_Run_WhenBootOnly_DoesBoot(t *testing.T) {
+func Test_GivenBootOnlyConfig_WhenBoot_ThenSuccessfullyBoots(t *testing.T) {
+
+	// Given
 	const (
 		dest = "dest"
 		udid = "test-ID"
 	)
 
-	logger := log.NewLogger()
-	simulatorManager := new(mocks.SimulatorManager)
+	var (
+		logger           = log.NewLogger()
+		simulatorManager = new(mocks.SimulatorManager)
+		s                = SimulatorStarter{
+			logger:           logger,
+			simulatorManager: simulatorManager,
+		}
+		config = Config{
+			Input: Input{
+				Destination:       dest,
+				ShouldWaitForBoot: false,
+			},
+			SimulatorID: udid,
+		}
+	)
+
 	simulatorManager.On("ResetLaunchServices").Once().Return(nil)
 	simulatorManager.On("Boot", udid).Once().Return(nil)
 
-	s := SimulatorStarter{
-		logger:           logger,
-		simulatorManager: simulatorManager,
-	}
-	config := Config{
-		Input: Input{
-			Destination:       dest,
-			ShouldWaitForBoot: false,
-		},
-		SimulatorID: udid,
-	}
-
+	// When
 	got, err := s.Run(config)
 
+	// Then
 	require.NoError(t, err)
 	require.Equal(t, got, Result{
 		IsSimulatorTimeout: false,
@@ -43,31 +49,36 @@ func TestSimulatorStarter_Run_WhenBootOnly_DoesBoot(t *testing.T) {
 	simulatorManager.AssertExpectations(t)
 }
 
-func TestSimulatorStarter_Run_WhenBootFails_ReturnsError(t *testing.T) {
+func Test_GivenBootOnlyConfig_WhenSimulatorBootFails_ThenItReturnsError(t *testing.T) {
+	// Given
 	const (
 		dest = "dest"
 		udid = "test-ID"
 	)
 
-	logger := log.NewLogger()
-	simulatorManager := new(mocks.SimulatorManager)
+	var (
+		logger           = log.NewLogger()
+		simulatorManager = new(mocks.SimulatorManager)
+		s                = SimulatorStarter{
+			logger:           logger,
+			simulatorManager: simulatorManager,
+		}
+		config = Config{
+			Input: Input{
+				Destination:       dest,
+				ShouldWaitForBoot: false,
+			},
+			SimulatorID: udid,
+		}
+	)
+
 	simulatorManager.On("ResetLaunchServices").Once().Return(nil)
 	simulatorManager.On("Boot", udid).Once().Return(errors.New("boot error"))
 
-	s := SimulatorStarter{
-		logger:           logger,
-		simulatorManager: simulatorManager,
-	}
-	config := Config{
-		Input: Input{
-			Destination:       dest,
-			ShouldWaitForBoot: false,
-		},
-		SimulatorID: udid,
-	}
-
+	// When
 	got, err := s.Run(config)
 
+	// Then
 	require.Error(t, err)
 	require.Equal(t, got, Result{
 		IsSimulatorTimeout: false,
@@ -76,34 +87,39 @@ func TestSimulatorStarter_Run_WhenBootFails_ReturnsError(t *testing.T) {
 	simulatorManager.AssertExpectations(t)
 }
 
-func TestSimulatorStarter_Run_WhenWaitForBootFails_ReturnsTimeoutError(t *testing.T) {
+func Test_GivenWaitForBootConfig_WhenWaitForBootFails_ThenReturnsTimeoutError(t *testing.T) {
+	// Given
 	const (
 		dest    = "dest"
 		udid    = "test-ID"
 		timeout = 1 * time.Second
 	)
 
-	logger := log.NewLogger()
-	simulatorManager := new(mocks.SimulatorManager)
+	var (
+		logger           = log.NewLogger()
+		simulatorManager = new(mocks.SimulatorManager)
+		s                = SimulatorStarter{
+			logger:           logger,
+			simulatorManager: simulatorManager,
+		}
+		config = Config{
+			Input: Input{
+				Destination:        dest,
+				ShouldWaitForBoot:  true,
+				WaitForBootTimeout: int(timeout.Seconds()),
+			},
+			SimulatorID: udid,
+		}
+	)
+
 	simulatorManager.On("ResetLaunchServices").Once().Return(nil)
 	simulatorManager.On("Boot", udid).Once().Return(nil)
 	simulatorManager.On("WaitForBootFinished", udid, timeout).Once().Return(errors.New("timeout"))
 
-	s := SimulatorStarter{
-		logger:           logger,
-		simulatorManager: simulatorManager,
-	}
-	config := Config{
-		Input: Input{
-			Destination:        dest,
-			ShouldWaitForBoot:  true,
-			WaitForBootTimeout: int(timeout.Seconds()),
-		},
-		SimulatorID: udid,
-	}
-
+	// When
 	got, err := s.Run(config)
 
+	// Then
 	require.Error(t, err)
 	require.Equal(t, got, Result{
 		IsSimulatorTimeout: true,
