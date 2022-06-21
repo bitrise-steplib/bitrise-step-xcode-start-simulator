@@ -27,8 +27,8 @@ func TestSimulatorStarter_Run_WhenBootOnly_DoesBoot(t *testing.T) {
 	}
 	config := Config{
 		Input: Input{
-			Destination: dest,
-			WaitForBoot: false,
+			Destination:       dest,
+			ShouldWaitForBoot: false,
 		},
 		SimulatorID: udid,
 	}
@@ -60,8 +60,8 @@ func TestSimulatorStarter_Run_WhenBootFails_ReturnsError(t *testing.T) {
 	}
 	config := Config{
 		Input: Input{
-			Destination: dest,
-			WaitForBoot: false,
+			Destination:       dest,
+			ShouldWaitForBoot: false,
 		},
 		SimulatorID: udid,
 	}
@@ -96,7 +96,7 @@ func TestSimulatorStarter_Run_WhenWaitForBootFails_ReturnsTimeoutError(t *testin
 	config := Config{
 		Input: Input{
 			Destination:        dest,
-			WaitForBoot:        true,
+			ShouldWaitForBoot:  true,
 			WaitForBootTimeout: int(timeout.Seconds()),
 		},
 		SimulatorID: udid,

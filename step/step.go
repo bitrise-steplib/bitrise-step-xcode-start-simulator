@@ -16,11 +16,11 @@ import (
 var errTimeout = errors.New("simulator boot timed out")
 
 type Input struct {
-	Destination string `env:"destination,required"`
-	Erase       bool   `env:"erase,opt[yes,no]"`
-	WaitForBoot bool   `env:"wait_for_boot,opt[yes,no]"`
+	Destination       string `env:"destination,required"`
+	ShouldErase       bool   `env:"erase,opt[yes,no]"`
+	ShouldWaitForBoot bool   `env:"wait_for_boot,opt[yes,no]"`
 	// Debugging
-	DebugLog           bool `env:"verbose_log,opt[yes,no]"`
+	IsVerboseLog       bool `env:"verbose_log,opt[yes,no]"`
 	WaitForBootTimeout int  `env:"wait_for_boot_timeout,required"`
 }
 
@@ -82,7 +82,7 @@ func (s SimulatorStarter) ProcessConfig() (Config, error) {
 
 	stepconf.Print(input)
 	s.logger.Println()
-	s.logger.EnableDebugLog(input.DebugLog)
+	s.logger.EnableDebugLog(input.IsVerboseLog)
 
 	sim, err := s.getSimulatorForDestination(input.Destination)
 	if err != nil {
@@ -100,7 +100,7 @@ func (s SimulatorStarter) InstallDependencies() error {
 }
 
 func (s SimulatorStarter) Run(config Config) (Result, error) {
-	err := s.prepareSimulator(config)
+	err := s.prepareSimulator(config.SimulatorID, config.ShouldWaitForBoot, config.WaitForBootTimeout, config.ShouldErase)
 
 	return Result{
 		IsSimulatorTimeout: errors.Is(err, errTimeout),
@@ -131,35 +131,35 @@ func (s SimulatorStarter) ExportOutputs(result Result) error {
 	return nil
 }
 
-func (s SimulatorStarter) prepareSimulator(config Config) error {
+func (s SimulatorStarter) prepareSimulator(udid string, shouldWaitForBoot bool, waitForBootTimeout int, shouldErase bool) error {
 	err := s.simulatorManager.ResetLaunchServices()
 	if err != nil {
 		s.logger.Warnf("Failed to apply simulator boot workaround: %s", err)
 	}
 
-	if config.Erase {
+	if shouldErase {
 		s.logger.Println()
 		s.logger.Donef("Erasing simulator...")
-		if err := s.simulatorManager.Shutdown(config.SimulatorID); err != nil {
+		if err := s.simulatorManager.Shutdown(udid); err != nil {
 			return err
 		}
-		if err := s.simulatorManager.Erase(config.SimulatorID); err != nil {
+		if err := s.simulatorManager.Erase(udid); err != nil {
 			return err
 		}
 	}
 
 	s.logger.Println()
 	s.logger.TDonef("Booting simulator...")
-	if err := s.simulatorManager.Boot(config.SimulatorID); err != nil {
+	if err := s.simulatorManager.Boot(udid); err != nil {
 		return err
 	}
 
-	if config.WaitForBoot {
+	if shouldWaitForBoot {
 		s.logger.Println()
 		s.logger.TDonef("Waiting for simulator to boot...")
 
-		timeout := time.Duration(config.WaitForBootTimeout) * time.Second
-		if err := s.simulatorManager.WaitForBootFinished(config.SimulatorID, timeout); err != nil {
+		timeout := time.Duration(waitForBootTimeout) * time.Second
+		if err := s.simulatorManager.WaitForBootFinished(udid, timeout); err != nil {
 			s.logger.Errorf("%s", err)
 			return errTimeout
 		}
