@@ -14,27 +14,7 @@ workflows:
 
   sample:
     steps:
-    # - script:
-    #     timeout: 180
-    #     inputs:
-    #     - content: |-
-    #         #!/usr/bin/env bash
-    #         set -eox
-
-    #         DEVICE_UDID=$(xcrun simctl list -j | jq -r '.devices."com.apple.CoreSimulator.SimRuntime.iOS-16-0"[] | select(.name == "iPhone 8 Plus") | .udid')
-    #         xcrun simctl shutdown $DEVICE_UDID || true
-    #         xcrun simctl erase $DEVICE_UDID
-    #         xcrun simctl boot $DEVICE_UDID
-
-    #         set +e
-
-    #         scripts/timeout-monitor.py -t 60 -c "xcrun simctl launch $DEVICE_UDID com.apple.mobileslideshow"
-    #         if [[ $? -eq 12 ]];
-    #         then
-    #           envman add --key IOS_SIMULATOR_TIMEOUT --value 1
-    #           exit 12
-    #         fi
-    - path::./: {}
+    - path::./: { }
 
   generate_readme:
     steps:
