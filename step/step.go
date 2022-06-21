@@ -1,6 +1,7 @@
 package step
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -11,6 +12,8 @@ import (
 	"github.com/bitrise-io/go-xcode/v2/destination"
 	"github.com/bitrise-io/go-xcode/v2/simulator"
 )
+
+var errTimeout = errors.New("simulator boot timed out")
 
 type Input struct {
 	Destination string `env:"destination,required"`
@@ -100,14 +103,14 @@ func (s SimulatorStarter) Run(config Config) (Result, error) {
 	err := s.prepareSimulator(config)
 
 	return Result{
-		IsSimulatorTimeout: err != nil,
+		IsSimulatorTimeout: errors.Is(err, errTimeout),
 		Destination:        config.Destination,
 	}, err
 }
 
 func (s SimulatorStarter) ExportOutputs(result Result) error {
 	const (
-		isSimErrorKey  = "BITRISE_IS_SIMULATOR_ERROR"
+		isSimErrorKey  = "BITRISE_IS_SIMULATOR_TIMEOUT"
 		destinationKey = "BITRISE_XCODE_DESTINATION"
 	)
 
@@ -115,12 +118,12 @@ func (s SimulatorStarter) ExportOutputs(result Result) error {
 	s.logger.Donef("Exporting ouputs")
 
 	isTimeout := fmt.Sprintf("%t", result.IsSimulatorTimeout)
-	s.logger.Infof("Exporting %s = %s", isSimErrorKey, isTimeout)
+	s.logger.Infof("Output %s = %s", isSimErrorKey, isTimeout)
 	if err := s.stepenvRepository.Set(isSimErrorKey, isTimeout); err != nil {
 		return err
 	}
 
-	s.logger.Infof("Exporting %s = %s", destinationKey, result.Destination)
+	s.logger.Infof("Output %s = %s", destinationKey, result.Destination)
 	if err := s.stepenvRepository.Set(destinationKey, result.Destination); err != nil {
 		return err
 	}
@@ -157,7 +160,8 @@ func (s SimulatorStarter) prepareSimulator(config Config) error {
 
 		timeout := time.Duration(config.WaitForBootTimeout) * time.Second
 		if err := s.simulatorManager.WaitForBootFinished(config.SimulatorID, timeout); err != nil {
-			return err
+			s.logger.Errorf("%s", err)
+			return errTimeout
 		}
 
 		s.logger.Println()
