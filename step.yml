@@ -48,7 +48,7 @@ inputs:
 - wait_for_boot: "no"
   opts:
     title: Wait for simulator to boot
-    summary: If enabled, will wait simulator boot to complete.
+    summary: If enabled, will wait for the simulator boot to complete.
     description: |-
       If enabled, will wait simulator boot to complete.
 
