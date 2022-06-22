@@ -55,7 +55,7 @@ inputs:
       Setting to `yes` makes it possible to detect hangs or timeouts when booting simulator.
       If a timeout occurs, the `BITRISE_IS_SIMULATOR_TIMEOUT` output will be set to true.
 
-      Using `no` (the default) enables to boot the Simulator parallel to other Steps.
+      Using `no` (the default) enables the Simulator boot to occur in parallel to other Steps.
     value_options:
     - "yes"
     - "no"
