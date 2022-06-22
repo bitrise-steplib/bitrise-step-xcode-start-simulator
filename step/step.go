@@ -16,12 +16,11 @@ import (
 var errTimeout = errors.New("simulator boot timed out")
 
 type Input struct {
-	Destination       string `env:"destination,required"`
-	ShouldErase       bool   `env:"erase,opt[yes,no]"`
-	ShouldWaitForBoot bool   `env:"wait_for_boot,opt[yes,no]"`
+	Destination string `env:"destination,required"`
 	// Debugging
 	IsVerboseLog       bool `env:"verbose_log,opt[yes,no]"`
 	WaitForBootTimeout int  `env:"wait_for_boot_timeout,required"`
+	ShouldReset        bool `env:"reset,opt[yes,no]"`
 }
 
 type Config struct {
@@ -100,7 +99,7 @@ func (s SimulatorStarter) InstallDependencies() error {
 }
 
 func (s SimulatorStarter) Run(config Config) (Result, error) {
-	err := s.prepareSimulator(config.SimulatorID, config.ShouldWaitForBoot, config.WaitForBootTimeout, config.ShouldErase)
+	err := s.prepareSimulator(config.SimulatorID, config.WaitForBootTimeout, config.ShouldReset)
 
 	return Result{
 		IsSimulatorTimeout: errors.Is(err, errTimeout),
@@ -131,13 +130,13 @@ func (s SimulatorStarter) ExportOutputs(result Result) error {
 	return nil
 }
 
-func (s SimulatorStarter) prepareSimulator(udid string, shouldWaitForBoot bool, waitForBootTimeout int, shouldErase bool) error {
+func (s SimulatorStarter) prepareSimulator(udid string, waitForBootTimeout int, shouldReset bool) error {
 	err := s.simulatorManager.ResetLaunchServices()
 	if err != nil {
 		s.logger.Warnf("Failed to apply simulator boot workaround: %s", err)
 	}
 
-	if shouldErase {
+	if shouldReset {
 		s.logger.Println()
 		s.logger.Donef("Erasing simulator...")
 		if err := s.simulatorManager.Shutdown(udid); err != nil {
@@ -154,9 +153,9 @@ func (s SimulatorStarter) prepareSimulator(udid string, shouldWaitForBoot bool, 
 		return err
 	}
 
-	if shouldWaitForBoot {
+	if waitForBootTimeout > 0 {
 		s.logger.Println()
-		s.logger.TDonef("Waiting for simulator to boot...")
+		s.logger.TDonef("Waiting for the simulator to finish booting...")
 
 		timeout := time.Duration(waitForBootTimeout) * time.Second
 		if err := s.simulatorManager.WaitForBootFinished(udid, timeout); err != nil {
@@ -166,6 +165,8 @@ func (s SimulatorStarter) prepareSimulator(udid string, shouldWaitForBoot bool, 
 
 		s.logger.Println()
 		s.logger.TDonef("Successfully started simulator.")
+	} else {
+		s.logger.Printf("Not waiting for the simulator to finish booting (timeout not set).")
 	}
 
 	return nil

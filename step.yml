@@ -34,34 +34,21 @@ inputs:
       The input value uses the same format as xcodebuild's `-destination` option.
     is_required: true
 
-- erase: "no"
-  opts:
-    title: Erase Simulator before use
-    summary: If enabled, will erase a simulator's contents and settings.
-    description: |-
-      If enabled, will erase a simulator's contents and settings.
-    value_options:
-    - "yes"
-    - "no"
-    is_required: true
+# Debugging
 
-- wait_for_boot: "no"
+- wait_for_boot_timeout: 0
   opts:
-    title: Wait for simulator to boot
-    summary: If enabled, will wait for the simulator boot to complete.
+    category: Debugging
+    title: Simulator boot timeout (in seconds)
+    summary: When larger than 0, will wait for the simulator boot to complete.
     description: |-
-      If enabled, will wait for the simulator boot to complete.
+      When larger than 0, will wait for the simulator boot to complete.
 
-      Setting to `yes` makes it possible to detect hangs or timeouts when booting simulator.
+      Setting to larger than 0 makes it possible to detect hangs or timeouts when booting simulator.
       If a timeout occurs, the `BITRISE_IS_SIMULATOR_TIMEOUT` output will be set to true.
 
-      Using `no` (the default) enables the Simulator boot to occur in parallel to other Steps.
-    value_options:
-    - "yes"
-    - "no"
+      Using `0` (the default) enables the Simulator boot to occur in parallel to other Steps.
     is_required: true
-
-# Debugging
 
 - verbose_log: "no"
   opts:
@@ -73,15 +60,19 @@ inputs:
     - "no"
     is_required: true
 
-- wait_for_boot_timeout: 90
+- reset: "no"
   opts:
     category: Debugging
-    title: Simulator boot timeout
-    summary: Maximum allowed time for simulator boot (in seconds)
+    title: Shutdown and erase simulator before use
+    summary: If enabled, will shutdown and erase a simulator's contents and settings.
     description: |-
-      Maximum allowed time for simulator boot (in seconds)
+      If enabled, will shutdown and erase a simulator's contents and settings.
 
-      "Wait for simulator to boot" (`wait_for_boot`) must be set to `yes`.
+      This option is not needed when starting from a clean state on a CI build.
+      When enabled erasing contents takes about a second.
+    value_options:
+    - "yes"
+    - "no"
     is_required: true
 
 outputs:
@@ -91,10 +82,15 @@ outputs:
     description: |
       Set to true/false based on starting Xcode Simulator failed with an unrecoverable error.
 
+      It can be used to trigger a new build conditionally:
+
+      is_always_run: true
+      run_if: '{{enveq "BITRISE_IS_SIMULATOR_TIMEOUT" "true"}}'
+
 - BITRISE_XCODE_DESTINATION:
   opts:
     title: Device destination specifier
     description: |-
       Device destination specifier
 
-      The destination specifer provided in the `destination` Input, so it can be used in other Steps too.
+      The destination specifer provided in the `destination` Input. It can be used as Input of other Steps, to avoid duplication.

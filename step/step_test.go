@@ -27,8 +27,8 @@ func Test_GivenBootOnlyConfig_WhenBoot_ThenSuccessfullyBoots(t *testing.T) {
 		}
 		config = Config{
 			Input: Input{
-				Destination:       dest,
-				ShouldWaitForBoot: false,
+				Destination:        dest,
+				WaitForBootTimeout: 0,
 			},
 			SimulatorID: udid,
 		}
@@ -65,8 +65,8 @@ func Test_GivenBootOnlyConfig_WhenSimulatorBootFails_ThenItReturnsError(t *testi
 		}
 		config = Config{
 			Input: Input{
-				Destination:       dest,
-				ShouldWaitForBoot: false,
+				Destination:        dest,
+				WaitForBootTimeout: 0,
 			},
 			SimulatorID: udid,
 		}
@@ -105,7 +105,6 @@ func Test_GivenWaitForBootConfig_WhenWaitForBootFails_ThenReturnsTimeoutError(t 
 		config = Config{
 			Input: Input{
 				Destination:        dest,
-				ShouldWaitForBoot:  true,
 				WaitForBootTimeout: int(timeout.Seconds()),
 			},
 			SimulatorID: udid,
