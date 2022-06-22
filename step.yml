@@ -9,8 +9,8 @@ source_code_url: https://github.com/bitrise-steplib/bitrise-step-xcode-start-sim
 support_url: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator/issues
 project_type_tags:
 - ios
-- xamarin
 - react-native
+- flutter
 - cordova
 - ionic
 type_tags:
@@ -69,6 +69,8 @@ inputs:
       If enabled, will shutdown and erase a simulator's contents and settings.
 
       This option is not needed when starting from a clean state on a CI build.
+      It may be used when running testing multiple apps on the same simulator or for making sure that the simulator is indeed in a clean state when an app fails to install due to an unexpected issue.
+      
       When enabled erasing contents takes about a second.
     value_options:
     - "yes"
