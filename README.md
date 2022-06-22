@@ -1,93 +1,81 @@
-# Start Simulator
+# Start Xcode simulator
 
-Starts an Xcode Simulator.
+[![Step changelog](https://shields.io/github/v/release/bitrise-steplib/bitrise-step-xcode-start-simulator?include_prereleases&label=changelog&color=blueviolet)](https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator/releases)
+
+Starts an Xcode simulator.
 
 
-## How to use this Step
+<details>
+<summary>Description</summary>
 
-Can be run directly with the [bitrise CLI](https://github.com/bitrise-io/bitrise),
-just `git clone` this repository, `cd` into it's folder in your Terminal/Command Line
-and call `bitrise run test`.
+Starts an Xcode simulator.
 
-*Check the `bitrise.yml` file for required inputs which have to be
-added to your `.bitrise.secrets.yml` file!*
+</details>
 
-Step by step:
+## 🧩 Get started
 
-1. Open up your Terminal / Command Line
-2. `git clone` the repository
-3. `cd` into the directory of the step (the one you just `git clone`d)
-5. Create a `.bitrise.secrets.yml` file in the same directory of `bitrise.yml`
-   (the `.bitrise.secrets.yml` is a git ignored file, you can store your secrets in it)
-6. Check the `bitrise.yml` file for any secret you should set in `.bitrise.secrets.yml`
-  * Best practice is to mark these options with something like `# define these in your .bitrise.secrets.yml`, in the `app:envs` section.
-7. Once you have all the required secret parameters in your `.bitrise.secrets.yml` you can just run this step with the [bitrise CLI](https://github.com/bitrise-io/bitrise): `bitrise run test`
+Add this step directly to your workflow in the [Bitrise Workflow Editor](https://devcenter.bitrise.io/steps-and-workflows/steps-and-workflows-index/).
 
-An example `.bitrise.secrets.yml` file:
+You can also run this step directly with [Bitrise CLI](https://github.com/bitrise-io/bitrise).
 
-```
-envs:
-- A_SECRET_PARAM_ONE: the value for secret one
-- A_SECRET_PARAM_TWO: the value for secret two
-```
+### Examples
 
-## How to create your own step
-
-1. Create a new git repository for your step (**don't fork** the *step template*, create a *new* repository)
-2. Copy the [step template](https://github.com/bitrise-steplib/step-template) files into your repository
-3. Fill the `step.sh` with your functionality
-4. Wire out your inputs to `step.yml` (`inputs` section)
-5. Fill out the other parts of the `step.yml` too
-6. Provide test values for the inputs in the `bitrise.yml`
-7. Run your step with `bitrise run test` - if it works, you're ready
-
-__For Step development guidelines & best practices__ check this documentation: [https://github.com/bitrise-io/bitrise/blob/master/_docs/step-development-guideline.md](https://github.com/bitrise-io/bitrise/blob/master/_docs/step-development-guideline.md).
-
-**NOTE:**
-
-If you want to use your step in your project's `bitrise.yml`:
-
-1. git push the step into it's repository
-2. reference it in your `bitrise.yml` with the `git::PUBLIC-GIT-CLONE-URL@BRANCH` step reference style:
-
-```
-- git::https://github.com/user/my-step.git@branch:
-   title: My step
-   inputs:
-   - my_input_1: "my value 1"
-   - my_input_2: "my value 2"
+Boot simulator in the background and use it in the xcode-test Step:
+```yaml
+- xcode-start-simulator:
+    inputs:
+    - destination: platform=iOS Simulator,name=iPhone 8,OS=latest
+- xcode-test:
+    inputs:
+    - project_path: ./ios-sample/ios-sample.xcodeproj
+    - scheme: ios-sample
+    # Simulator
+    - destination: $BITRISE_XCODE_DESTINATION # Use the same destination as the xcode-start-simulator Step
 ```
 
-You can find more examples of step reference styles
-in the [bitrise CLI repository](https://github.com/bitrise-io/bitrise/blob/master/_examples/tutorials/steps-and-workflows/bitrise.yml#L65).
+Detect if simulator timed out and restart the build:
+```yaml
+- xcode-start-simulator:
+    inputs:
+    - destination: platform=iOS Simulator,name=iPhone 8,OS=latest
+    - wait_for_boot_timeout: 90
+- trigger-bitrise-workflow:
+    is_always_run: true
+    run_if: '{{enveq "BITRISE_SIMULATOR_STATUS" "hanged"}}'
+    inputs:
+    - api_token: $RESTART_TRIGGER_TOKEN
+    - workflow_id: wf
+```
 
-## How to contribute to this Step
+## ⚙️ Configuration
 
-1. Fork this repository
-2. `git clone` it
-3. Create a branch you'll work on
-4. To use/test the step just follow the **How to use this Step** section
-5. Do the changes you want to
-6. Run/test the step before sending your contribution
-  * You can also test the step in your `bitrise` project, either on your Mac or on [bitrise.io](https://www.bitrise.io)
-  * You just have to replace the step ID in your project's `bitrise.yml` with either a relative path, or with a git URL format
-  * (relative) path format: instead of `- original-step-id:` use `- path::./relative/path/of/script/on/your/Mac:`
-  * direct git URL format: instead of `- original-step-id:` use `- git::https://github.com/user/step.git@branch:`
-  * You can find more example of alternative step referencing at: https://github.com/bitrise-io/bitrise/blob/master/_examples/tutorials/steps-and-workflows/bitrise.yml
-7. Once you're done just commit your changes & create a Pull Request
+<details>
+<summary>Inputs</summary>
 
+| Key | Description | Flags | Default |
+| --- | --- | --- | --- |
+| `destination` | Destination specifier describes the simulator device to be started.  The input value uses the same format as xcodebuild's `-destination` option. | required | `platform=iOS Simulator,name=iPhone 8 Plus,OS=latest` |
+| `wait_for_boot_timeout` | When larger than 0, will wait for the simulator boot to complete.  Setting to larger than 0 makes it possible to detect hangs or timeouts when booting simulator. If a timeout occurs, the `BITRISE_SIMULATOR_STATUS` output will be set to `hanged`.  Using `0` (the default) enables the Simulator boot to occur in parallel to other Steps. | required | `0` |
+| `verbose_log` | If this input is set, the Step will print additional logs for debugging. | required | `no` |
+| `reset` | If enabled, will shutdown and erase a simulator's contents and settings.  This option is not needed when starting from a clean state on a CI build. It may be used when running testing multiple apps on the same simulator or for making sure that the simulator is indeed in a clean state when an app fails to install due to an unexpected issue.  When enabled erasing contents takes about a second. | required | `no` |
+</details>
 
-## Share your own Step
+<details>
+<summary>Outputs</summary>
 
-You can share your Step or step version with the [bitrise CLI](https://github.com/bitrise-io/bitrise). If you use the `bitrise.yml` included in this repository, all you have to do is:
+| Environment Variable | Description |
+| --- | --- |
+| `BITRISE_SIMULATOR_STATUS` | Set to true/false based on starting Xcode Simulator failed with an unrecoverable error.  Possible values are: - `booted` - `failed` - `hanged`  It can be used to trigger a new build conditionally:  ``` is_always_run: true run_if: '{{enveq "BITRISE_SIMULATOR_STATUS" "hanged"}}' ```  |
+| `BITRISE_XCODE_DESTINATION` | Device destination specifier  The destination specifer provided in the `destination` Input. It can be used as Input of other Steps, to avoid duplication. |
+</details>
 
-1. In your Terminal / Command Line `cd` into this directory (where the `bitrise.yml` of the step is located)
-1. Run: `bitrise run test` to test the step
-1. Run: `bitrise run audit-this-step` to audit the `step.yml`
-1. Check the `share-this-step` workflow in the `bitrise.yml`, and fill out the
-   `envs` if you haven't done so already (don't forget to bump the version number if this is an update
-   of your step!)
-1. Then run: `bitrise run share-this-step` to share the step (version) you specified in the `envs`
-1. Send the Pull Request, as described in the logs of `bitrise run share-this-step`
+## 🙋 Contributing
 
-That's all ;)
+We welcome [pull requests](https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator/pulls) and [issues](https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator/issues) against this repository.
+
+For pull requests, work on your changes in a forked repository and use the Bitrise CLI to [run step tests locally](https://devcenter.bitrise.io/bitrise-cli/run-your-first-build/).
+
+Learn more about developing steps:
+
+- [Create your own step](https://devcenter.bitrise.io/contributors/create-your-own-step/)
+- [Testing your Step](https://devcenter.bitrise.io/contributors/testing-and-versioning-your-steps/)

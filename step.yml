@@ -1,16 +1,16 @@
 title: |-
-  Start Xcode Simulator
+  Start Xcode simulator
 summary: |
-  Starts an Xcode Simulator.
+  Starts an Xcode simulator.
 description: |
-  Starts an Xcode Simulator.
+  Starts an Xcode simulator.
 website: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator
 source_code_url: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator
 support_url: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator/issues
 project_type_tags:
 - ios
-- xamarin
 - react-native
+- flutter
 - cordova
 - ionic
 type_tags:
@@ -24,20 +24,87 @@ toolkit:
   go:
     package_name: github.com/bitrise-steplib/bitrise-step-xcode-start-simulator
 inputs:
-  - destination: platform=iOS Simulator,name=iPhone 8 Plus,OS=latest
-    opts:
-      title: Device destination specifier
-      summary: Destination specifier describes the simulator device to be started.
-      description: |-
-        Destination specifier describes the simulator device to be started.
+- destination: platform=iOS Simulator,name=iPhone 8 Plus,OS=latest
+  opts:
+    title: Device destination specifier
+    summary: Destination specifier describes the simulator device to be started.
+    description: |-
+      Destination specifier describes the simulator device to be started.
 
-        The input value uses the same format as xcodebuild's `-destination` option.
-      is_required: true
+      The input value uses the same format as xcodebuild's `-destination` option.
+    is_required: true
+
+# Debugging
+
+- wait_for_boot_timeout: 0
+  opts:
+    category: Debugging
+    title: Simulator boot timeout (in seconds)
+    summary: When larger than 0, will wait for the simulator boot to complete.
+    description: |-
+      When larger than 0, will wait for the simulator boot to complete.
+
+      Setting to larger than 0 makes it possible to detect hangs or timeouts when booting simulator.
+      If a timeout occurs, the `BITRISE_SIMULATOR_STATUS` output will be set to `hanged`.
+      A reccomended value is 90.
+
+      Using `0` (the default) enables the Simulator boot to occur in parallel to other Steps.
+    is_required: true
+
+- verbose_log: "no"
+  opts:
+    category: Debugging
+    title: Enable verbose logging
+    summary: If this input is set, the Step will print additional logs for debugging.
+    value_options:
+    - "yes"
+    - "no"
+    is_required: true
+
+- reset: "no"
+  opts:
+    category: Debugging
+    title: Shutdown and erase simulator before use
+    summary: If enabled, will shutdown and erase a simulator's contents and settings.
+    description: |-
+      If enabled, will shutdown and erase a simulator's contents and settings.
+
+      This option is not needed when starting from a clean state on a CI build.
+      It may be used when running testing multiple apps on the same simulator or for making sure that the simulator is indeed in a clean state when an app fails to install due to an unexpected issue.
+
+      When enabled erasing contents takes about a second.
+    value_options:
+    - "yes"
+    - "no"
+    is_required: true
 
 outputs:
-  - BITRISE_IS_SIMULATOR_ERROR:
-    opts:
-      title: Set to true/false based if starting Xcode Simulator failed with an unrecoverable error.
-      description: |
-        Set to true/false based if starting Xcode Simulator failed with an unrecoverable error.
+- BITRISE_SIMULATOR_STATUS:
+  opts:
+    title: Set to true/false based on starting Xcode Simulator failed with an unrecoverable error.
+    description: |
+      Set to true/false based on starting Xcode Simulator failed with an unrecoverable error.
 
+      Possible values are:
+      - `booted`
+      - `failed`
+      - `hanged`
+
+      It can be used to trigger a new build conditionally:
+
+      ```
+      is_always_run: true
+      run_if: '{{enveq "BITRISE_SIMULATOR_STATUS" "hanged"}}'
+      ```
+    value_options:
+    - booted
+    - failed
+    - hanged
+
+- BITRISE_XCODE_DESTINATION:
+  opts:
+    title: Device destination specifier
+    description: |-
+      Device destination specifier
+
+      The destination specifer provided in the `destination` Input. It can be used as Input of other Steps, to avoid duplication.

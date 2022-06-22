@@ -1,4 +1,5 @@
 bitrise-step-xcode-start-simulator
+README.md.backup
 .bitrise*
 _tmp/
 .vscode/
