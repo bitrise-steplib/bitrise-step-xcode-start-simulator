@@ -71,7 +71,7 @@ inputs:
 
       This option is not needed when starting from a clean state on a CI build.
       It may be used when running testing multiple apps on the same simulator or for making sure that the simulator is indeed in a clean state when an app fails to install due to an unexpected issue.
-      
+
       When enabled erasing contents takes about a second.
     value_options:
     - "yes"
@@ -97,9 +97,9 @@ outputs:
       run_if: '{{enveq "BITRISE_SIMULATOR_STATUS" "hanged"}}'
       ```
     value_options:
-    - "booted"
-    - "failed"
-    - "hanged"
+    - booted
+    - failed
+    - hanged
 
 - BITRISE_XCODE_DESTINATION:
   opts:
