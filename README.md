@@ -54,10 +54,9 @@ Detect if simulator timed out and restart the build:
 | Key | Description | Flags | Default |
 | --- | --- | --- | --- |
 | `destination` | Destination specifier describes the simulator device to be started.  The input value uses the same format as xcodebuild's `-destination` option. | required | `platform=iOS Simulator,name=iPhone 8 Plus,OS=latest` |
-| `erase` | If enabled, will erase a simulator's contents and settings. | required | `no` |
-| `wait_for_boot` | If enabled, will wait simulator boot to complete.  Setting to `yes` makes possible to detect hangs or timeouts when booting simulator. If a timeout occurs, the `BITRISE_IS_SIMULATOR_TIMEOUT` output will be set to true.  Using `no` (the default) enables to boot the Simulator parallel to other Steps. | required | `no` |
+| `wait_for_boot_timeout` | When larger than 0, will wait for the simulator boot to complete.  Setting to larger than 0 makes it possible to detect hangs or timeouts when booting simulator. If a timeout occurs, the `BITRISE_IS_SIMULATOR_TIMEOUT` output will be set to true.  Using `0` (the default) enables the Simulator boot to occur in parallel to other Steps. | required | `0` |
 | `verbose_log` | If this input is set, the Step will print additional logs for debugging. | required | `no` |
-| `wait_for_boot_timeout` | Maximum allowed time for simulator boot (in seconds)  "Wait for simulator to boot" (`wait_for_boot`) must be set to `yes`. | required | `90` |
+| `reset` | If enabled, will shutdown and erase a simulator's contents and settings.  This option is not needed when starting from a clean state on a CI build. When enabled erasing contents takes about a second. | required | `no` |
 </details>
 
 <details>
@@ -65,8 +64,8 @@ Detect if simulator timed out and restart the build:
 
 | Environment Variable | Description |
 | --- | --- |
-| `BITRISE_IS_SIMULATOR_TIMEOUT` | Set to true/false based on starting Xcode Simulator failed with an unrecoverable error.  |
-| `BITRISE_XCODE_DESTINATION` | Device destination specifier  The destination specifer provided in the `destination` Input, so it can be used in other Steps too. |
+| `BITRISE_IS_SIMULATOR_TIMEOUT` | Set to true/false based on starting Xcode Simulator failed with an unrecoverable error.  It can be used to trigger a new build conditionally:  is_always_run: true run_if: '{{enveq "BITRISE_IS_SIMULATOR_TIMEOUT" "true"}}'  |
+| `BITRISE_XCODE_DESTINATION` | Device destination specifier  The destination specifer provided in the `destination` Input. It can be used as Input of other Steps, to avoid duplication. |
 </details>
 
 ## 🙋 Contributing
