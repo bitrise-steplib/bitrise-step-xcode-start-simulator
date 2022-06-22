@@ -45,7 +45,8 @@ inputs:
       When larger than 0, will wait for the simulator boot to complete.
 
       Setting to larger than 0 makes it possible to detect hangs or timeouts when booting simulator.
-      If a timeout occurs, the `BITRISE_IS_SIMULATOR_TIMEOUT` output will be set to true.
+      If a timeout occurs, the `BITRISE_SIMULATOR_STATUS` output will be set to `hanged`.
+      A reccomended value is 90.
 
       Using `0` (the default) enables the Simulator boot to occur in parallel to other Steps.
     is_required: true
@@ -78,16 +79,27 @@ inputs:
     is_required: true
 
 outputs:
-- BITRISE_IS_SIMULATOR_TIMEOUT:
+- BITRISE_SIMULATOR_STATUS:
   opts:
     title: Set to true/false based on starting Xcode Simulator failed with an unrecoverable error.
     description: |
       Set to true/false based on starting Xcode Simulator failed with an unrecoverable error.
 
+      Possible values are:
+      - `booted`
+      - `failed`
+      - `hanged`
+
       It can be used to trigger a new build conditionally:
 
+      ```
       is_always_run: true
-      run_if: '{{enveq "BITRISE_IS_SIMULATOR_TIMEOUT" "true"}}'
+      run_if: '{{enveq "BITRISE_SIMULATOR_STATUS" "hanged"}}'
+      ```
+    value_options:
+    - "booted"
+    - "failed"
+    - "hanged"
 
 - BITRISE_XCODE_DESTINATION:
   opts:

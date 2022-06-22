@@ -18,9 +18,10 @@ Detect if simulator timed out and restart the build:
 - xcode-start-simulator:
     inputs:
     - destination: platform=iOS Simulator,name=iPhone 8,OS=latest
+    - wait_for_boot_timeout: 90
 - trigger-bitrise-workflow:
     is_always_run: true
-    run_if: '{{enveq "BITRISE_IS_SIMULATOR_TIMEOUT" "true"}}'
+    run_if: '{{enveq "BITRISE_SIMULATOR_STATUS" "hanged"}}'
     inputs:
     - api_token: $RESTART_TRIGGER_TOKEN
     - workflow_id: wf

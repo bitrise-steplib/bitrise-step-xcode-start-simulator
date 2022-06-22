@@ -43,8 +43,8 @@ func Test_GivenBootOnlyConfig_WhenBoot_ThenSuccessfullyBoots(t *testing.T) {
 	// Then
 	require.NoError(t, err)
 	require.Equal(t, got, Result{
-		IsSimulatorTimeout: false,
-		Destination:        dest,
+		SimulatorStatus: "booted",
+		Destination:     dest,
 	})
 	simulatorManager.AssertExpectations(t)
 }
@@ -81,8 +81,8 @@ func Test_GivenBootOnlyConfig_WhenSimulatorBootFails_ThenItReturnsError(t *testi
 	// Then
 	require.Error(t, err)
 	require.Equal(t, got, Result{
-		IsSimulatorTimeout: false,
-		Destination:        dest,
+		SimulatorStatus: "failed",
+		Destination:     dest,
 	})
 	simulatorManager.AssertExpectations(t)
 }
@@ -121,8 +121,8 @@ func Test_GivenWaitForBootConfig_WhenWaitForBootFails_ThenReturnsTimeoutError(t 
 	// Then
 	require.Error(t, err)
 	require.Equal(t, got, Result{
-		IsSimulatorTimeout: true,
-		Destination:        dest,
+		SimulatorStatus: "hanged",
+		Destination:     dest,
 	})
 	simulatorManager.AssertExpectations(t)
 }

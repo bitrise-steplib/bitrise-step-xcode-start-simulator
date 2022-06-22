@@ -13,6 +13,12 @@ import (
 	"github.com/bitrise-io/go-xcode/v2/simulator"
 )
 
+const (
+	simulatorResultStatusSuccess = "booted"
+	simulatorResultStatusFailed  = "failed"
+	simulatorResultStatusHanged  = "hanged"
+)
+
 var errTimeout = errors.New("simulator boot timed out")
 
 type Input struct {
@@ -30,8 +36,8 @@ type Config struct {
 }
 
 type Result struct {
-	IsSimulatorTimeout bool
-	Destination        string
+	SimulatorStatus string
+	Destination     string
 }
 
 type SimulatorStarter struct {
@@ -101,24 +107,32 @@ func (s SimulatorStarter) InstallDependencies() error {
 func (s SimulatorStarter) Run(config Config) (Result, error) {
 	err := s.prepareSimulator(config.SimulatorID, config.WaitForBootTimeout, config.ShouldReset)
 
+	simulatorStatus := simulatorResultStatusSuccess
+	if err != nil {
+		if errors.Is(err, errTimeout) {
+			simulatorStatus = simulatorResultStatusHanged
+		} else {
+			simulatorStatus = simulatorResultStatusFailed
+		}
+	}
+
 	return Result{
-		IsSimulatorTimeout: errors.Is(err, errTimeout),
-		Destination:        config.Destination,
+		SimulatorStatus: simulatorStatus,
+		Destination:     config.Destination,
 	}, err
 }
 
 func (s SimulatorStarter) ExportOutputs(result Result) error {
 	const (
-		isSimTimeoutKey = "BITRISE_IS_SIMULATOR_TIMEOUT"
-		destinationKey  = "BITRISE_XCODE_DESTINATION"
+		simulatorStatusKey = "BITRISE_SIMULATOR_STATUS"
+		destinationKey     = "BITRISE_XCODE_DESTINATION"
 	)
 
 	s.logger.Println()
 	s.logger.Donef("Exporting ouputs")
 
-	isTimeout := fmt.Sprintf("%t", result.IsSimulatorTimeout)
-	s.logger.Infof("Output %s = %s", isSimTimeoutKey, isTimeout)
-	if err := s.stepenvRepository.Set(isSimTimeoutKey, isTimeout); err != nil {
+	s.logger.Infof("Output %s = %s", simulatorStatusKey, result.SimulatorStatus)
+	if err := s.stepenvRepository.Set(simulatorStatusKey, result.SimulatorStatus); err != nil {
 		return err
 	}
 

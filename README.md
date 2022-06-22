@@ -38,9 +38,10 @@ Detect if simulator timed out and restart the build:
 - xcode-start-simulator:
     inputs:
     - destination: platform=iOS Simulator,name=iPhone 8,OS=latest
+    - wait_for_boot_timeout: 90
 - trigger-bitrise-workflow:
     is_always_run: true
-    run_if: '{{enveq "BITRISE_IS_SIMULATOR_TIMEOUT" "true"}}'
+    run_if: '{{enveq "BITRISE_SIMULATOR_STATUS" "hanged"}}'
     inputs:
     - api_token: $RESTART_TRIGGER_TOKEN
     - workflow_id: wf
@@ -54,7 +55,7 @@ Detect if simulator timed out and restart the build:
 | Key | Description | Flags | Default |
 | --- | --- | --- | --- |
 | `destination` | Destination specifier describes the simulator device to be started.  The input value uses the same format as xcodebuild's `-destination` option. | required | `platform=iOS Simulator,name=iPhone 8 Plus,OS=latest` |
-| `wait_for_boot_timeout` | When larger than 0, will wait for the simulator boot to complete.  Setting to larger than 0 makes it possible to detect hangs or timeouts when booting simulator. If a timeout occurs, the `BITRISE_IS_SIMULATOR_TIMEOUT` output will be set to true.  Using `0` (the default) enables the Simulator boot to occur in parallel to other Steps. | required | `0` |
+| `wait_for_boot_timeout` | When larger than 0, will wait for the simulator boot to complete.  Setting to larger than 0 makes it possible to detect hangs or timeouts when booting simulator. If a timeout occurs, the `BITRISE_SIMULATOR_STATUS` output will be set to `hanged`.  Using `0` (the default) enables the Simulator boot to occur in parallel to other Steps. | required | `0` |
 | `verbose_log` | If this input is set, the Step will print additional logs for debugging. | required | `no` |
 | `reset` | If enabled, will shutdown and erase a simulator's contents and settings.  This option is not needed when starting from a clean state on a CI build. It may be used when running testing multiple apps on the same simulator or for making sure that the simulator is indeed in a clean state when an app fails to install due to an unexpected issue.  When enabled erasing contents takes about a second. | required | `no` |
 </details>
@@ -64,7 +65,7 @@ Detect if simulator timed out and restart the build:
 
 | Environment Variable | Description |
 | --- | --- |
-| `BITRISE_IS_SIMULATOR_TIMEOUT` | Set to true/false based on starting Xcode Simulator failed with an unrecoverable error.  It can be used to trigger a new build conditionally:  is_always_run: true run_if: '{{enveq "BITRISE_IS_SIMULATOR_TIMEOUT" "true"}}'  |
+| `BITRISE_SIMULATOR_STATUS` | Set to true/false based on starting Xcode Simulator failed with an unrecoverable error.  Possible values are: - `booted` - `failed` - `hanged`  It can be used to trigger a new build conditionally:  ``` is_always_run: true run_if: '{{enveq "BITRISE_SIMULATOR_STATUS" "hanged"}}' ```  |
 | `BITRISE_XCODE_DESTINATION` | Device destination specifier  The destination specifer provided in the `destination` Input. It can be used as Input of other Steps, to avoid duplication. |
 </details>
 
