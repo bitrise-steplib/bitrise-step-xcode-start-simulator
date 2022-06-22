@@ -19,7 +19,7 @@ description: |-
         # Simulator
         - destination: $BITRISE_XCODE_DESTINATION # Use the same destination as the xcode-start-simulator Step
     ```
-    
+
   * Detect if simulator timed out and restart the build:
     ```yaml
     - xcode-start-simulator:
