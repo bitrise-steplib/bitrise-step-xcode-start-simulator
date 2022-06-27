@@ -75,7 +75,7 @@ inputs:
 
       Setting this value to an int larger than 0 makes it possible to detect hangs or timeouts when booting simulator by waiting for the simulator to boot before this step completes.
       If a timeout occurs, the `BITRISE_SIMULATOR_STATUS` output will be set to `hanged`.
-      The reccomended value is 90.
+      The recommended value is 90.
 
       Using `0` (the default) enables the Simulator boot to occur in parallel to other Steps.
     is_required: true
