@@ -16,7 +16,7 @@ import (
 const (
 	simulatorResultStatusSuccess = "booted"
 	simulatorResultStatusFailed  = "failed"
-	simulatorResultStatusHanged  = "hanged"
+	SimulatorResultStatusHanged  = "hanged"
 )
 
 var errTimeout = errors.New("simulator boot timed out")
@@ -110,7 +110,7 @@ func (s SimulatorStarter) Run(config Config) (Result, error) {
 	simulatorStatus := simulatorResultStatusSuccess
 	if err != nil {
 		if errors.Is(err, errTimeout) {
-			simulatorStatus = simulatorResultStatusHanged
+			simulatorStatus = SimulatorResultStatusHanged
 		} else {
 			simulatorStatus = simulatorResultStatusFailed
 		}

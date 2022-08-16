@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/bitrise-io/bitrise/exitcode"
 	"github.com/bitrise-io/go-steputils/v2/stepconf"
 	"github.com/bitrise-io/go-steputils/v2/stepenv"
 	"github.com/bitrise-io/go-utils/v2/command"
@@ -33,7 +34,11 @@ func run() int {
 	exitCode := 0
 	if runErr != nil {
 		logger.Errorf("Run: %s", runErr)
-		exitCode = 1
+		if result.SimulatorStatus == step.SimulatorResultStatusHanged {
+			exitCode = exitcode.CLIAbortedWithNoOutputTimeout
+		} else {
+			exitCode = 1
+		}
 	}
 
 	if exportErr != nil {
