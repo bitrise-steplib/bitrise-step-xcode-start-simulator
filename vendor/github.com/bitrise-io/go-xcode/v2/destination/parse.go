@@ -247,7 +247,7 @@ func (d deviceFinder) filterDeviceType(wantedDeviceName string) (string, error) 
 		}
 	}
 
-	return "", fmt.Errorf("device type (%s) is unavailable")
+	return "", fmt.Errorf("device (%s) is unavailable", wantedDeviceName)
 }
 
 func (r deviceRuntime) isDeviceSupported(wantedDeviceIdentifier string) bool {

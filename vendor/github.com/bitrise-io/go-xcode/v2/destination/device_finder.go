@@ -55,7 +55,7 @@ func (d deviceFinder) FindDevice(destination Simulator) (Device, error) {
 	}
 
 	var misingErr *missingDeviceErr
-	if err != nil && !errors.Is(err, misingErr) {
+	if err != nil && !errors.As(err, &misingErr) {
 		if err := d.debugDeviceList(); err != nil {
 			d.logger.Warnf("failed to log device list: %s", err)
 		}

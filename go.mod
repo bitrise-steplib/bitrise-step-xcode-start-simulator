@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.2
 	github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.11
-	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.20.0.20220911122936-ec7435ccfe1d
+	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.20.0.20220911133925-cc1f94b6d86c
 	github.com/stretchr/testify v1.7.1
 )
 
