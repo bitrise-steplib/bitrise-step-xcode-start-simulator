@@ -38,24 +38,26 @@ func NewDeviceFinder(log log.Logger, commandFactory command.Factory) DeviceFinde
 
 // GetSimulator returns a Simulator matching the destination
 func (d deviceFinder) FindDevice(destination Simulator) (Device, error) {
+	var (
+		device Device
+		err    error
+	)
+
 	start := time.Now()
 	if d.list == nil {
-		list, err := d.parseDeviceList()
-		if err != nil {
-			return Device{}, err
-		}
-
-		d.list = &list
+		d.list, err = d.parseDeviceList()
+	}
+	if err == nil {
+		device, err = d.filterDeviceList(destination)
 	}
 
-	device, err := d.filterDeviceList(destination)
 	d.logger.TDebugf("Parsed simulator list in %s", time.Since(start).Round(time.Second))
 	if err == nil {
 		return device, nil
 	}
 
 	var misingErr *missingDeviceErr
-	if err != nil && !errors.As(err, &misingErr) {
+	if !errors.As(err, &misingErr) {
 		if err := d.debugDeviceList(); err != nil {
 			d.logger.Warnf("failed to log device list: %s", err)
 		}
@@ -63,18 +65,18 @@ func (d deviceFinder) FindDevice(destination Simulator) (Device, error) {
 		return Device{}, err
 	}
 
+	d.logger.Infof("Creating missing device...")
+
 	start = time.Now()
 	err = d.createDevice(misingErr.name, misingErr.deviceTypeID, misingErr.runtimeID)
 	d.logger.Debugf("Created device in %s", time.Since(start).Round(time.Second))
-	if err != nil {
-		return Device{}, err
+
+	if err == nil {
+		d.list, err = d.parseDeviceList()
+	}
+	if err == nil {
+		device, err = d.filterDeviceList(destination)
 	}
 
-	list, err := d.parseDeviceList()
-	if err != nil {
-		return Device{}, err
-	}
-	d.list = &list
-
-	return d.filterDeviceList(destination)
+	return device, err
 }
