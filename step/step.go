@@ -118,7 +118,7 @@ func (s SimulatorStarter) Run(config Config) (Result, error) {
 
 	return Result{
 		SimulatorStatus: simulatorStatus,
-		Destination:     config.Destination,
+		Destination:     "udid=" + config.SimulatorID, //config.Destination,
 	}, err
 }
 
