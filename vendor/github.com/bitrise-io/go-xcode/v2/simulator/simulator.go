@@ -106,7 +106,7 @@ func (m manager) ResetLaunchServices() error {
 
 // Boot boots Simulator in headless mode
 func (m manager) Boot(id string) error {
-	cmd := m.commandFactory.Create("xcrun", []string{"simctl", "boot", id}, &command.Opts{
+	cmd := m.commandFactory.Create("xcrun", []string{"simctl", "boot", id, "--arch=x86_64"}, &command.Opts{
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
 	})
