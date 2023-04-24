@@ -38,6 +38,7 @@ type Config struct {
 type Result struct {
 	SimulatorStatus string
 	Destination     string
+	UDID            string
 }
 
 type SimulatorStarter struct {
@@ -118,7 +119,8 @@ func (s SimulatorStarter) Run(config Config) (Result, error) {
 
 	return Result{
 		SimulatorStatus: simulatorStatus,
-		Destination:     "udid=" + config.SimulatorID, //config.Destination,
+		Destination:     config.Destination,
+		UDID:            config.SimulatorID,
 	}, err
 }
 
@@ -126,6 +128,7 @@ func (s SimulatorStarter) ExportOutputs(result Result) error {
 	const (
 		simulatorStatusKey = "BITRISE_SIMULATOR_STATUS"
 		destinationKey     = "BITRISE_XCODE_DESTINATION"
+		udidKey            = "BITRISE_XCODE_DESTINATION_UDID"
 	)
 
 	s.logger.Println()
@@ -138,6 +141,11 @@ func (s SimulatorStarter) ExportOutputs(result Result) error {
 
 	s.logger.Infof("Output %s = %s", destinationKey, result.Destination)
 	if err := s.stepenvRepository.Set(destinationKey, result.Destination); err != nil {
+		return err
+	}
+
+	s.logger.Infof("Output %s = %s", udidKey, result.UDID)
+	if err := s.stepenvRepository.Set(udidKey, result.UDID); err != nil {
 		return err
 	}
 
