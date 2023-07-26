@@ -10,6 +10,7 @@ import (
 	"github.com/bitrise-io/go-utils/v2/log"
 	"github.com/bitrise-io/go-xcode/v2/destination"
 	"github.com/bitrise-io/go-xcode/v2/simulator"
+	"github.com/bitrise-io/go-xcode/v2/xcodeversion"
 	"github.com/bitrise-steplib/bitrise-step-xcode-start-simulator/step"
 )
 
@@ -48,7 +49,12 @@ func createStep(logger log.Logger) step.SimulatorStarter {
 	envRepository := env.NewRepository()
 	inputParser := stepconf.NewInputParser(envRepository)
 	commandFactory := command.NewFactory(envRepository)
-	deviceFinder := destination.NewDeviceFinder(logger, commandFactory)
+	xcodebuildVersionProvider := xcodeversion.NewXcodeVersionProvider(commandFactory)
+	xcodeVersion, err := xcodebuildVersionProvider.GetVersion()
+	if err != nil { // not fatal error, continuing with empty version
+		logger.Errorf("failed to read Xcode version: %s", err)
+	}
+	deviceFinder := destination.NewDeviceFinder(logger, commandFactory, xcodeVersion)
 	simulatorManager := simulator.NewManager(logger, commandFactory)
 	stepenvRepository := stepenv.NewRepository(envRepository)
 
