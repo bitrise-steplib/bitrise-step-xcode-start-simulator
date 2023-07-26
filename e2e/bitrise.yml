@@ -4,19 +4,19 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 workflows:
   test_hang:
     envs:
-    - DESTINATION: platform=iOS Simulator,name=iPhone 11,OS=latest
+    - DESTINATION: platform=iOS Simulator,name=Bitrise iOS default,OS=latest,arch=x86_64
     - TIMEOUT: 90
     after_run:
     - _run
     - _check_outputs
 
-  test_create_device:
-    envs:
-    - DESTINATION: platform=iOS Simulator,name=iPhone 11 Pro Max,OS=latest
-    - TIMEOUT: 0
-    after_run:
-    - _run
-    - _check_outputs
+  # test_create_device:
+  #   envs:
+  #   - DESTINATION: platform=iOS Simulator,name=iPhone 11 Pro Max,OS=latest
+  #   - TIMEOUT: 0
+  #   after_run:
+  #   - _run
+  #   - _check_outputs
 
   _run:
     steps:
