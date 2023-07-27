@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	exitCodeAlreadyDone = 1491 // Simulator already shutdown/booted
+	exitCodeAlreadyDone = 149 // Simulator already shutdown/booted
 )
 
 // Manager provides methods for issuing Simulator commands
@@ -221,15 +221,15 @@ func (m manager) Shutdown(id string) error {
 	})
 	m.logger.TPrintf("$ %s", cmd.PrintableCommandArgs())
 
-	_, err := cmd.RunAndReturnExitCode()
+	exitCode, err := cmd.RunAndReturnExitCode()
 	if err != nil {
-		// if errorutil.IsExitStatusError(err) {
-		// 	if exitCode == exitCodeAlreadyDone { // Simulator already shut down
-		// 		return nil
-		// 	}
-		// 	m.logger.Warnf("Failed to shutdown Simulator, command exited with code %d", exitCode)
-		// 	return nil
-		// }
+		if errorutil.IsExitStatusError(err) {
+			if exitCode == exitCodeAlreadyDone { // Simulator already shut down
+				return nil
+			}
+			m.logger.Warnf("Failed to shutdown Simulator, command exited with code %d", exitCode)
+			return nil
+		}
 
 		return fmt.Errorf("failed to shutdown Simulator, command execution failed: %v", err)
 	}
