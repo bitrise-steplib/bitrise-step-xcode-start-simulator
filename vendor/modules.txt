@@ -19,7 +19,7 @@ github.com/bitrise-io/go-utils/v2/env
 github.com/bitrise-io/go-utils/v2/log
 github.com/bitrise-io/go-utils/v2/log/colorstring
 github.com/bitrise-io/go-utils/v2/pathutil
-# github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.28
+# github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.28.0.20230727114031-84320507d45a
 ## explicit; go 1.16
 github.com/bitrise-io/go-xcode/v2/destination
 github.com/bitrise-io/go-xcode/v2/simulator
