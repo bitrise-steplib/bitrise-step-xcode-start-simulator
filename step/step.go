@@ -116,9 +116,11 @@ func (s SimulatorStarter) Run(config Config) (Result, error) {
 		}
 	}
 
+	// Omitting `arch` option on purpose, to enable xcode-test Step pick up prebooted Rosetta Simulator
+	exportedDestination := fmt.Sprintf("platform=%s,name=%s,OS=%s", config.Simulator.Platform, config.Simulator.Name, config.Simulator.OS)
 	return Result{
 		SimulatorStatus: simulatorStatus,
-		Destination:     config.Destination,
+		Destination:     exportedDestination,
 	}, err
 }
 

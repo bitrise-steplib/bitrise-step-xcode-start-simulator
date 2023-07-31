@@ -12,12 +12,8 @@ import (
 )
 
 func Test_GivenBootOnlyConfig_WhenBoot_ThenSuccessfullyBoots(t *testing.T) {
-
 	// Given
-	const (
-		dest = "dest"
-		udid = "test-ID"
-	)
+	const udid = "test-ID"
 
 	var (
 		logger           = log.NewLogger()
@@ -26,10 +22,14 @@ func Test_GivenBootOnlyConfig_WhenBoot_ThenSuccessfullyBoots(t *testing.T) {
 			logger:           logger,
 			simulatorManager: simulatorManager,
 		}
-		simulator = destination.Device{ID: udid}
-		config    = Config{
+		simulator = destination.Device{
+			ID:       udid,
+			Platform: "iOS Simulator",
+			Name:     "Bitrise iOS default",
+			OS:       "11",
+		}
+		config = Config{
 			Input: Input{
-				Destination:        dest,
 				WaitForBootTimeout: 0,
 			},
 			Simulator: simulator,
@@ -46,16 +46,13 @@ func Test_GivenBootOnlyConfig_WhenBoot_ThenSuccessfullyBoots(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, got, Result{
 		SimulatorStatus: "booted",
-		Destination:     dest,
+		Destination:     "platform=iOS Simulator,name=Bitrise iOS default,OS=11",
 	})
 }
 
 func Test_GivenBootOnlyConfig_WhenSimulatorBootFails_ThenItReturnsError(t *testing.T) {
 	// Given
-	const (
-		dest = "dest"
-		udid = "test-ID"
-	)
+	const udid = "test-ID"
 
 	var (
 		logger           = log.NewLogger()
@@ -64,10 +61,14 @@ func Test_GivenBootOnlyConfig_WhenSimulatorBootFails_ThenItReturnsError(t *testi
 			logger:           logger,
 			simulatorManager: simulatorManager,
 		}
-		simulator = destination.Device{ID: udid}
-		config    = Config{
+		simulator = destination.Device{
+			ID:       udid,
+			Platform: "iOS Simulator",
+			Name:     "Bitrise iOS default",
+			OS:       "11",
+		}
+		config = Config{
 			Input: Input{
-				Destination:        dest,
 				WaitForBootTimeout: 0,
 			},
 			Simulator: simulator,
@@ -84,14 +85,13 @@ func Test_GivenBootOnlyConfig_WhenSimulatorBootFails_ThenItReturnsError(t *testi
 	require.Error(t, err)
 	require.Equal(t, got, Result{
 		SimulatorStatus: "failed",
-		Destination:     dest,
+		Destination:     "platform=iOS Simulator,name=Bitrise iOS default,OS=11",
 	})
 }
 
 func Test_GivenWaitForBootConfig_WhenWaitForBootFails_ThenReturnsTimeoutError(t *testing.T) {
 	// Given
 	const (
-		dest    = "dest"
 		udid    = "test-ID"
 		timeout = 1 * time.Second
 	)
@@ -103,10 +103,14 @@ func Test_GivenWaitForBootConfig_WhenWaitForBootFails_ThenReturnsTimeoutError(t 
 			logger:           logger,
 			simulatorManager: simulatorManager,
 		}
-		simulator = destination.Device{ID: udid}
-		config    = Config{
+		simulator = destination.Device{
+			ID:       udid,
+			Platform: "iOS Simulator",
+			Name:     "Bitrise iOS default",
+			OS:       "11",
+		}
+		config = Config{
 			Input: Input{
-				Destination:        dest,
 				WaitForBootTimeout: int(timeout.Seconds()),
 			},
 			Simulator: simulator,
@@ -124,6 +128,6 @@ func Test_GivenWaitForBootConfig_WhenWaitForBootFails_ThenReturnsTimeoutError(t 
 	require.Error(t, err)
 	require.Equal(t, got, Result{
 		SimulatorStatus: "hanged",
-		Destination:     dest,
+		Destination:     "platform=iOS Simulator,name=Bitrise iOS default,OS=11",
 	})
 }
