@@ -25,7 +25,7 @@ It allows two use cases:
       # Simulator
       - destination: $BITRISE_XCODE_DESTINATION # Use the same destination as the xcode-start-simulator Step
   ```
-  
+
 * Detect if simulator timed out and restart the build:
   ```yaml
   - xcode-start-simulator:
@@ -53,13 +53,26 @@ Boot simulator in the background and use it in the xcode-test Step:
 ```yaml
 - xcode-start-simulator:
     inputs:
-    - destination: platform=iOS Simulator,name=iPhone 8,OS=latest
+    - destination: platform=iOS Simulator,name=Bitrise iOS default,OS=latest
 - xcode-test:
     inputs:
     - project_path: ./ios-sample/ios-sample.xcodeproj
     - scheme: ios-sample
-    # Simulator
     - destination: $BITRISE_XCODE_DESTINATION # Use the same destination as the xcode-start-simulator Step
+```
+
+Boot Rosetta Simulator and use it in the xcode-test Step:
+```yaml
+- xcode-start-simulator:
+    inputs:
+    - destination: platform=iOS Simulator,name=Bitrise iOS default,OS=latest,arch=x86_64
+- xcode-test:
+    inputs:
+    - project_path: ./ios-sample/ios-sample.xcodeproj
+    - scheme: ios-sample
+    - destination: $BITRISE_XCODE_DESTINATION # Use the same destination as the xcode-start-simulator Step
+    # Disabling parallel testing ensures that prebooted device is used. ARCHS=x86_64 is optional, to enable project compilation
+    - xcodebuild_options: -verbose -parallel-testing-enabled NO  ARCHS=x86_64
 ```
 
 Detect if simulator timed out and restart the build:
@@ -84,7 +97,7 @@ Detect if simulator timed out and restart the build:
 | Key | Description | Flags | Default |
 | --- | --- | --- | --- |
 | `destination` | Destination specifier describes the simulator device to be started.  The input value uses the same format as xcodebuild's `-destination` option. | required | `platform=iOS Simulator,name=iPhone 8 Plus,OS=latest` |
-| `wait_for_boot_timeout` | When larger than 0, will wait for the simulator boot to complete.  Setting this value to an int larger than 0 makes it possible to detect hangs or timeouts when booting simulator by waiting for the simulator to boot before this step completes. If a timeout occurs, the `BITRISE_SIMULATOR_STATUS` output will be set to `hanged`. The reccomended value is 90.  Using `0` (the default) enables the Simulator boot to occur in parallel to other Steps. | required | `0` |
+| `wait_for_boot_timeout` | When larger than 0, will wait for the simulator boot to complete.  Setting this value to an int larger than 0 makes it possible to detect hangs or timeouts when booting simulator by waiting for the simulator to boot before this step completes. If a timeout occurs, the `BITRISE_SIMULATOR_STATUS` output will be set to `hanged`. The recommended value is 90.  Using `0` (the default) enables the Simulator boot to occur in parallel to other Steps. | required | `0` |
 | `verbose_log` | If this input is set, the Step will print additional logs for debugging. | required | `no` |
 | `reset` | If enabled, will shutdown and erase a simulator's contents and settings.  This option is not needed when starting from a clean state on a CI build. It may be used when running testing multiple apps on the same simulator or for making sure that the simulator is indeed in a clean state when an app fails to install due to an unexpected issue.  When enabled erasing contents takes about a second. | required | `no` |
 </details>
