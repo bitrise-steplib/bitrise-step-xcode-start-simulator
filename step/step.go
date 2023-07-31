@@ -151,7 +151,7 @@ func (s SimulatorStarter) prepareSimulator(simulator destination.Device, waitFor
 	}
 
 	UDID := simulator.ID
-	if shouldReset {
+	if shouldReset || simulator.Arch != "" {
 		s.logger.Println()
 		s.logger.Donef("Erasing simulator...")
 		if err := s.simulatorManager.Shutdown(UDID); err != nil {
