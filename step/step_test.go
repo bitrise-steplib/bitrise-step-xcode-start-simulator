@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bitrise-io/go-utils/v2/log"
+	"github.com/bitrise-io/go-xcode/v2/destination"
 	"github.com/bitrise-steplib/bitrise-step-xcode-start-simulator/step/mocks"
 	"github.com/stretchr/testify/require"
 )
@@ -20,22 +21,23 @@ func Test_GivenBootOnlyConfig_WhenBoot_ThenSuccessfullyBoots(t *testing.T) {
 
 	var (
 		logger           = log.NewLogger()
-		simulatorManager = new(mocks.SimulatorManager)
+		simulatorManager = mocks.NewSimulatorManager(t)
 		s                = SimulatorStarter{
 			logger:           logger,
 			simulatorManager: simulatorManager,
 		}
-		config = Config{
+		simulator = destination.Device{ID: udid}
+		config    = Config{
 			Input: Input{
 				Destination:        dest,
 				WaitForBootTimeout: 0,
 			},
-			SimulatorID: udid,
+			Simulator: simulator,
 		}
 	)
 
 	simulatorManager.On("ResetLaunchServices").Once().Return(nil)
-	simulatorManager.On("Boot", udid).Once().Return(nil)
+	simulatorManager.On("Boot", simulator).Once().Return(nil)
 
 	// When
 	got, err := s.Run(config)
@@ -46,7 +48,6 @@ func Test_GivenBootOnlyConfig_WhenBoot_ThenSuccessfullyBoots(t *testing.T) {
 		SimulatorStatus: "booted",
 		Destination:     dest,
 	})
-	simulatorManager.AssertExpectations(t)
 }
 
 func Test_GivenBootOnlyConfig_WhenSimulatorBootFails_ThenItReturnsError(t *testing.T) {
@@ -58,22 +59,23 @@ func Test_GivenBootOnlyConfig_WhenSimulatorBootFails_ThenItReturnsError(t *testi
 
 	var (
 		logger           = log.NewLogger()
-		simulatorManager = new(mocks.SimulatorManager)
+		simulatorManager = mocks.NewSimulatorManager(t)
 		s                = SimulatorStarter{
 			logger:           logger,
 			simulatorManager: simulatorManager,
 		}
-		config = Config{
+		simulator = destination.Device{ID: udid}
+		config    = Config{
 			Input: Input{
 				Destination:        dest,
 				WaitForBootTimeout: 0,
 			},
-			SimulatorID: udid,
+			Simulator: simulator,
 		}
 	)
 
 	simulatorManager.On("ResetLaunchServices").Once().Return(nil)
-	simulatorManager.On("Boot", udid).Once().Return(errors.New("boot error"))
+	simulatorManager.On("Boot", simulator).Once().Return(errors.New("boot error"))
 
 	// When
 	got, err := s.Run(config)
@@ -84,7 +86,6 @@ func Test_GivenBootOnlyConfig_WhenSimulatorBootFails_ThenItReturnsError(t *testi
 		SimulatorStatus: "failed",
 		Destination:     dest,
 	})
-	simulatorManager.AssertExpectations(t)
 }
 
 func Test_GivenWaitForBootConfig_WhenWaitForBootFails_ThenReturnsTimeoutError(t *testing.T) {
@@ -97,22 +98,23 @@ func Test_GivenWaitForBootConfig_WhenWaitForBootFails_ThenReturnsTimeoutError(t 
 
 	var (
 		logger           = log.NewLogger()
-		simulatorManager = new(mocks.SimulatorManager)
+		simulatorManager = mocks.NewSimulatorManager(t)
 		s                = SimulatorStarter{
 			logger:           logger,
 			simulatorManager: simulatorManager,
 		}
-		config = Config{
+		simulator = destination.Device{ID: udid}
+		config    = Config{
 			Input: Input{
 				Destination:        dest,
 				WaitForBootTimeout: int(timeout.Seconds()),
 			},
-			SimulatorID: udid,
+			Simulator: simulator,
 		}
 	)
 
 	simulatorManager.On("ResetLaunchServices").Once().Return(nil)
-	simulatorManager.On("Boot", udid).Once().Return(nil)
+	simulatorManager.On("Boot", simulator).Once().Return(nil)
 	simulatorManager.On("WaitForBootFinished", udid, timeout).Once().Return(errors.New("timeout"))
 
 	// When
@@ -124,5 +126,4 @@ func Test_GivenWaitForBootConfig_WhenWaitForBootFails_ThenReturnsTimeoutError(t 
 		SimulatorStatus: "hanged",
 		Destination:     dest,
 	})
-	simulatorManager.AssertExpectations(t)
 }
