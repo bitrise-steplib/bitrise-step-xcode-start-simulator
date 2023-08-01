@@ -6,36 +6,38 @@ import (
 	"time"
 
 	"github.com/bitrise-io/go-utils/v2/log"
+	"github.com/bitrise-io/go-xcode/v2/destination"
 	"github.com/bitrise-steplib/bitrise-step-xcode-start-simulator/step/mocks"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_GivenBootOnlyConfig_WhenBoot_ThenSuccessfullyBoots(t *testing.T) {
-
 	// Given
-	const (
-		dest = "dest"
-		udid = "test-ID"
-	)
+	const udid = "test-ID"
 
 	var (
 		logger           = log.NewLogger()
-		simulatorManager = new(mocks.SimulatorManager)
+		simulatorManager = mocks.NewSimulatorManager(t)
 		s                = SimulatorStarter{
 			logger:           logger,
 			simulatorManager: simulatorManager,
 		}
+		simulator = destination.Device{
+			ID:       udid,
+			Platform: "iOS Simulator",
+			Name:     "Bitrise iOS default",
+			OS:       "11",
+		}
 		config = Config{
 			Input: Input{
-				Destination:        dest,
 				WaitForBootTimeout: 0,
 			},
-			SimulatorID: udid,
+			Simulator: simulator,
 		}
 	)
 
 	simulatorManager.On("ResetLaunchServices").Once().Return(nil)
-	simulatorManager.On("Boot", udid).Once().Return(nil)
+	simulatorManager.On("Boot", simulator).Once().Return(nil)
 
 	// When
 	got, err := s.Run(config)
@@ -44,36 +46,37 @@ func Test_GivenBootOnlyConfig_WhenBoot_ThenSuccessfullyBoots(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, got, Result{
 		SimulatorStatus: "booted",
-		Destination:     dest,
+		Destination:     "platform=iOS Simulator,name=Bitrise iOS default,OS=11",
 	})
-	simulatorManager.AssertExpectations(t)
 }
 
 func Test_GivenBootOnlyConfig_WhenSimulatorBootFails_ThenItReturnsError(t *testing.T) {
 	// Given
-	const (
-		dest = "dest"
-		udid = "test-ID"
-	)
+	const udid = "test-ID"
 
 	var (
 		logger           = log.NewLogger()
-		simulatorManager = new(mocks.SimulatorManager)
+		simulatorManager = mocks.NewSimulatorManager(t)
 		s                = SimulatorStarter{
 			logger:           logger,
 			simulatorManager: simulatorManager,
 		}
+		simulator = destination.Device{
+			ID:       udid,
+			Platform: "iOS Simulator",
+			Name:     "Bitrise iOS default",
+			OS:       "11",
+		}
 		config = Config{
 			Input: Input{
-				Destination:        dest,
 				WaitForBootTimeout: 0,
 			},
-			SimulatorID: udid,
+			Simulator: simulator,
 		}
 	)
 
 	simulatorManager.On("ResetLaunchServices").Once().Return(nil)
-	simulatorManager.On("Boot", udid).Once().Return(errors.New("boot error"))
+	simulatorManager.On("Boot", simulator).Once().Return(errors.New("boot error"))
 
 	// When
 	got, err := s.Run(config)
@@ -82,37 +85,40 @@ func Test_GivenBootOnlyConfig_WhenSimulatorBootFails_ThenItReturnsError(t *testi
 	require.Error(t, err)
 	require.Equal(t, got, Result{
 		SimulatorStatus: "failed",
-		Destination:     dest,
+		Destination:     "platform=iOS Simulator,name=Bitrise iOS default,OS=11",
 	})
-	simulatorManager.AssertExpectations(t)
 }
 
 func Test_GivenWaitForBootConfig_WhenWaitForBootFails_ThenReturnsTimeoutError(t *testing.T) {
 	// Given
 	const (
-		dest    = "dest"
 		udid    = "test-ID"
 		timeout = 1 * time.Second
 	)
 
 	var (
 		logger           = log.NewLogger()
-		simulatorManager = new(mocks.SimulatorManager)
+		simulatorManager = mocks.NewSimulatorManager(t)
 		s                = SimulatorStarter{
 			logger:           logger,
 			simulatorManager: simulatorManager,
 		}
+		simulator = destination.Device{
+			ID:       udid,
+			Platform: "iOS Simulator",
+			Name:     "Bitrise iOS default",
+			OS:       "11",
+		}
 		config = Config{
 			Input: Input{
-				Destination:        dest,
 				WaitForBootTimeout: int(timeout.Seconds()),
 			},
-			SimulatorID: udid,
+			Simulator: simulator,
 		}
 	)
 
 	simulatorManager.On("ResetLaunchServices").Once().Return(nil)
-	simulatorManager.On("Boot", udid).Once().Return(nil)
+	simulatorManager.On("Boot", simulator).Once().Return(nil)
 	simulatorManager.On("WaitForBootFinished", udid, timeout).Once().Return(errors.New("timeout"))
 
 	// When
@@ -122,7 +128,6 @@ func Test_GivenWaitForBootConfig_WhenWaitForBootFails_ThenReturnsTimeoutError(t 
 	require.Error(t, err)
 	require.Equal(t, got, Result{
 		SimulatorStatus: "hanged",
-		Destination:     dest,
+		Destination:     "platform=iOS Simulator,name=Bitrise iOS default,OS=11",
 	})
-	simulatorManager.AssertExpectations(t)
 }

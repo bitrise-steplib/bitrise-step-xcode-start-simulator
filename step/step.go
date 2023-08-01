@@ -32,7 +32,7 @@ type Input struct {
 type Config struct {
 	Input
 
-	SimulatorID string
+	Simulator destination.Device
 }
 
 type Result struct {
@@ -95,8 +95,8 @@ func (s SimulatorStarter) ProcessConfig() (Config, error) {
 	}
 
 	return Config{
-		Input:       input,
-		SimulatorID: sim.ID,
+		Input:     input,
+		Simulator: sim,
 	}, nil
 }
 
@@ -105,7 +105,7 @@ func (s SimulatorStarter) InstallDependencies() error {
 }
 
 func (s SimulatorStarter) Run(config Config) (Result, error) {
-	err := s.prepareSimulator(config.SimulatorID, config.WaitForBootTimeout, config.ShouldReset)
+	err := s.prepareSimulator(config.Simulator, config.WaitForBootTimeout, config.ShouldReset)
 
 	simulatorStatus := simulatorResultStatusSuccess
 	if err != nil {
@@ -116,9 +116,11 @@ func (s SimulatorStarter) Run(config Config) (Result, error) {
 		}
 	}
 
+	// Omitting `arch` option on purpose, to enable xcode-test Step pick up prebooted Rosetta Simulator
+	exportedDestination := fmt.Sprintf("platform=%s,name=%s,OS=%s", config.Simulator.Platform, config.Simulator.Name, config.Simulator.OS)
 	return Result{
 		SimulatorStatus: simulatorStatus,
-		Destination:     config.Destination,
+		Destination:     exportedDestination,
 	}, err
 }
 
@@ -144,26 +146,27 @@ func (s SimulatorStarter) ExportOutputs(result Result) error {
 	return nil
 }
 
-func (s SimulatorStarter) prepareSimulator(udid string, waitForBootTimeout int, shouldReset bool) error {
+func (s SimulatorStarter) prepareSimulator(simulator destination.Device, waitForBootTimeout int, shouldReset bool) error {
 	err := s.simulatorManager.ResetLaunchServices()
 	if err != nil {
 		s.logger.Warnf("Failed to apply simulator boot workaround: %s", err)
 	}
 
-	if shouldReset {
+	UDID := simulator.ID
+	if shouldReset || simulator.Arch != "" {
 		s.logger.Println()
 		s.logger.Donef("Erasing simulator...")
-		if err := s.simulatorManager.Shutdown(udid); err != nil {
+		if err := s.simulatorManager.Shutdown(UDID); err != nil {
 			return err
 		}
-		if err := s.simulatorManager.Erase(udid); err != nil {
+		if err := s.simulatorManager.Erase(UDID); err != nil {
 			return err
 		}
 	}
 
 	s.logger.Println()
 	s.logger.TDonef("Booting simulator...")
-	if err := s.simulatorManager.Boot(udid); err != nil {
+	if err := s.simulatorManager.Boot(simulator); err != nil {
 		return err
 	}
 
@@ -172,7 +175,7 @@ func (s SimulatorStarter) prepareSimulator(udid string, waitForBootTimeout int, 
 		s.logger.TDonef("Waiting for the simulator to finish booting...")
 
 		timeout := time.Duration(waitForBootTimeout) * time.Second
-		if err := s.simulatorManager.WaitForBootFinished(udid, timeout); err != nil {
+		if err := s.simulatorManager.WaitForBootFinished(UDID, timeout); err != nil {
 			s.logger.Errorf("%s", err)
 			return errTimeout
 		}
