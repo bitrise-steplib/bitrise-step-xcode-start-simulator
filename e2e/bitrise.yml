@@ -11,12 +11,14 @@ workflows:
     - _check_outputs
 
   test_start_visionos:
-    envs:
-    - DESTINATION: platform=visionOS Simulator,name=Apple Vision Pro,OS=latest
-    - TIMEOUT: 90
-    after_run:
-    - _run
-    - _check_outputs
+    description: visionOS Simulator requires Xcode 15.1+.
+    steps:
+    - bitrise-run:
+        run_if: |-
+          {{ or (enveq "IS_LATEST_STACK_XCODE" "true") (not .IsCI) }}
+        inputs:
+        - workflow_id: utility_test_start_visionos
+        - bitrise_config_path: ./e2e/bitrise.yml
 
   test_start_rosetta:
     description: Rosetta Simulator requires Xcode 14.3+.
@@ -27,6 +29,14 @@ workflows:
         inputs:
         - workflow_id: utility_test_start_rosetta
         - bitrise_config_path: ./e2e/bitrise.yml
+
+  utility_test_start_visionos:
+    envs:
+    - DESTINATION: platform=visionOS Simulator,name=Apple Vision Pro,OS=latest
+    - TIMEOUT: 90
+    after_run:
+    - _run
+    - _check_outputs
 
   utility_test_start_rosetta:
     envs:
@@ -49,7 +59,7 @@ workflows:
     - path::./:
         inputs:
         - destination: $DESTINATION
-        - reset: "yes"
+        - reset: "no"
         - wait_for_boot_timeout: $TIMEOUT
 
   _check_outputs:
