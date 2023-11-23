@@ -20,9 +20,9 @@ workflows:
             #!/bin/bash
             set -ex
             if xcrun simctl list runtimes | grep -q visionOS; then
-              VISIONOS_AVAILABLE=1
+              VISIONOS_AVAILABLE=true
             else
-              VISIONOS_AVAILABLE=0
+              VISIONOS_AVAILABLE=false
             fi
             envman add --key VISIONOS_AVAILABLE --value $VISIONOS_AVAILABLE
 
