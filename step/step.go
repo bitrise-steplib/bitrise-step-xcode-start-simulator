@@ -174,10 +174,14 @@ func (s SimulatorStarter) prepareSimulator(simulator destination.Device, waitFor
 		s.logger.Println()
 		s.logger.TDonef("Waiting for the simulator to finish booting...")
 
-		timeout := time.Duration(waitForBootTimeout) * time.Second
-		if err := s.simulatorManager.WaitForBootFinished(UDID, timeout); err != nil {
-			s.logger.Errorf("%s", err)
-			return errTimeout
+		if simulator.Platform == string(destination.VisionOSSimulator) {
+			s.logger.Warnf("Detecting boot completion is not working with visionOS yet, skipping...")
+		} else {
+			timeout := time.Duration(waitForBootTimeout) * time.Second
+			if err := s.simulatorManager.WaitForBootFinished(UDID, timeout); err != nil {
+				s.logger.Errorf("%s", err)
+				return errTimeout
+			}
 		}
 
 		s.logger.Println()
