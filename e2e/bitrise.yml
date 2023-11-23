@@ -9,10 +9,10 @@ workflows:
     after_run:
     - _run
     - _check_outputs
-  
+
   test_start_visionos:
     envs:
-    - DESTINATION: platform=visionOS Simulator,name=Apple Vision Pro,OS=1.0
+    - DESTINATION: platform=visionOS Simulator,name=Apple Vision Pro,OS=latest
     - TIMEOUT: 90
     after_run:
     - _run
