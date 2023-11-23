@@ -13,9 +13,19 @@ workflows:
   test_start_visionos:
     description: visionOS Simulator requires Xcode 15.1+.
     steps:
+    - script:
+        title: Test if current stack has visionOS runtime
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            xcrun simctl list runtimes | grep visionOS
+            VISIONOS_AVAILABLE=$?
+            envman add --key VISIONOS_AVAILALBE --value $VISIONOS_AVAILABLE
+
     - bitrise-run:
         run_if: |-
-          {{ or (enveq "IS_LATEST_STACK_XCODE" "true") (not .IsCI) }}
+          {{ or (enveq "VISIONOS_AVAILABLE" "true") (not .IsCI) }}
         inputs:
         - workflow_id: utility_test_start_visionos
         - bitrise_config_path: ./e2e/bitrise.yml
@@ -61,6 +71,10 @@ workflows:
         - destination: $DESTINATION
         - reset: "no"
         - wait_for_boot_timeout: $TIMEOUT
+    - script:
+        title: Shutdown running simulator
+        inputs:
+        - content: xcrun simctl shutdown booted
 
   _check_outputs:
     steps:
