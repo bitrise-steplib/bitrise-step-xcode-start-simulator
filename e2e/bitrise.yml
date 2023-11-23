@@ -20,7 +20,11 @@ workflows:
             #!/bin/bash
             set -ex
             if xcrun simctl list runtimes | grep -q visionOS; then
-              VISIONOS_AVAILABLE=true
+              if xcrun simctl list devices visionOS | grep -q "unavailable"; then
+                VISIONOS_AVAILABLE=false
+              else
+                VISIONOS_AVAILABLE=true
+              fi
             else
               VISIONOS_AVAILABLE=false
             fi
