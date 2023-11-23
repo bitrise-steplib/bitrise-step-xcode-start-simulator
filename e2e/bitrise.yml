@@ -19,9 +19,12 @@ workflows:
         - content: |
             #!/bin/bash
             set -ex
-            xcrun simctl list runtimes | grep visionOS
-            VISIONOS_AVAILABLE=$?
-            envman add --key VISIONOS_AVAILALBE --value $VISIONOS_AVAILABLE
+            if xcrun simctl list runtimes | grep -q visionOS; then
+              VISIONOS_AVAILABLE=1
+            else
+              VISIONOS_AVAILABLE=0
+            fi
+            envman add --key VISIONOS_AVAILABLE --value $VISIONOS_AVAILABLE
 
     - bitrise-run:
         run_if: |-
