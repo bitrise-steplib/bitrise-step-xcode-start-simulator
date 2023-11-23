@@ -175,6 +175,11 @@ func (s SimulatorStarter) prepareSimulator(simulator destination.Device, waitFor
 		s.logger.TDonef("Waiting for the simulator to finish booting...")
 
 		if simulator.Platform == string(destination.VisionOSSimulator) {
+			// Xcode 15.1 Beta 3: `xcrun simctl launch booted com.apple.Preferences` does not work on visionOS.
+			// Error:
+			// The system shell probably crashed.
+			// Underlying error (domain=FBSOpenApplicationServiceErrorDomain, code=5):
+			// The request to open "com.apple.Preferences" failed. The system shell probably crashed.
 			s.logger.Warnf("Detecting boot completion is not working with visionOS yet, skipping...")
 		} else {
 			timeout := time.Duration(waitForBootTimeout) * time.Second
