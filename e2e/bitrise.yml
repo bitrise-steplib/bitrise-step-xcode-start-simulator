@@ -2,9 +2,17 @@ format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 workflows:
-  test_start:
+  test_start_ios:
     envs:
     - DESTINATION: platform=iOS Simulator,name=Bitrise iOS default,OS=latest
+    - TIMEOUT: 90
+    after_run:
+    - _run
+    - _check_outputs
+  
+  test_start_visionos:
+    envs:
+    - DESTINATION: platform=visionOS Simulator,name=Apple Vision Pro,OS=1.0
     - TIMEOUT: 90
     after_run:
     - _run
