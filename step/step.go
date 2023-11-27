@@ -153,7 +153,7 @@ func (s SimulatorStarter) prepareSimulator(simulator destination.Device, waitFor
 	}
 
 	UDID := simulator.ID
-	if shouldReset || simulator.Arch != "" {
+	if shouldReset {
 		s.logger.Println()
 		s.logger.Donef("Erasing simulator...")
 		if err := s.simulatorManager.Shutdown(UDID); err != nil {
@@ -174,10 +174,19 @@ func (s SimulatorStarter) prepareSimulator(simulator destination.Device, waitFor
 		s.logger.Println()
 		s.logger.TDonef("Waiting for the simulator to finish booting...")
 
-		timeout := time.Duration(waitForBootTimeout) * time.Second
-		if err := s.simulatorManager.WaitForBootFinished(UDID, timeout); err != nil {
-			s.logger.Errorf("%s", err)
-			return errTimeout
+		if simulator.Platform == string(destination.VisionOSSimulator) {
+			// Xcode 15.1 Beta 3: `xcrun simctl launch booted com.apple.Preferences` does not work on visionOS.
+			// Error:
+			// The system shell probably crashed.
+			// Underlying error (domain=FBSOpenApplicationServiceErrorDomain, code=5):
+			// The request to open "com.apple.Preferences" failed. The system shell probably crashed.
+			s.logger.Warnf("Detecting boot completion is not working with visionOS yet, skipping...")
+		} else {
+			timeout := time.Duration(waitForBootTimeout) * time.Second
+			if err := s.simulatorManager.WaitForBootFinished(UDID, timeout); err != nil {
+				s.logger.Errorf("%s", err)
+				return errTimeout
+			}
 		}
 
 		s.logger.Println()

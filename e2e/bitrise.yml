@@ -2,13 +2,40 @@ format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 workflows:
-  test_start:
+  test_start_ios:
     envs:
     - DESTINATION: platform=iOS Simulator,name=Bitrise iOS default,OS=latest
     - TIMEOUT: 90
     after_run:
     - _run
     - _check_outputs
+
+  test_start_visionos:
+    description: visionOS Simulator requires Xcode 15.1+.
+    steps:
+    - script:
+        title: Test if current stack has visionOS runtime
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            if xcrun simctl list runtimes | grep -q visionOS; then
+              if xcrun simctl list devices visionOS | grep -q "unavailable"; then
+                VISIONOS_AVAILABLE=false
+              else
+                VISIONOS_AVAILABLE=true
+              fi
+            else
+              VISIONOS_AVAILABLE=false
+            fi
+            envman add --key VISIONOS_AVAILABLE --value $VISIONOS_AVAILABLE
+
+    - bitrise-run:
+        run_if: |-
+          {{ or (enveq "VISIONOS_AVAILABLE" "true") (not .IsCI) }}
+        inputs:
+        - workflow_id: utility_test_start_visionos
+        - bitrise_config_path: ./e2e/bitrise.yml
 
   test_start_rosetta:
     description: Rosetta Simulator requires Xcode 14.3+.
@@ -19,6 +46,14 @@ workflows:
         inputs:
         - workflow_id: utility_test_start_rosetta
         - bitrise_config_path: ./e2e/bitrise.yml
+
+  utility_test_start_visionos:
+    envs:
+    - DESTINATION: platform=visionOS Simulator,name=Apple Vision Pro,OS=latest
+    - TIMEOUT: 90
+    after_run:
+    - _run
+    - _check_outputs
 
   utility_test_start_rosetta:
     envs:
@@ -41,8 +76,13 @@ workflows:
     - path::./:
         inputs:
         - destination: $DESTINATION
-        - reset: "yes"
+        - reset: "no"
         - wait_for_boot_timeout: $TIMEOUT
+        - verbose_log: "yes"
+    - script:
+        title: Shutdown running simulator
+        inputs:
+        - content: xcrun simctl shutdown booted
 
   _check_outputs:
     steps:
