@@ -41,8 +41,6 @@ workflows:
     description: Rosetta Simulator requires Xcode 14.3+.
     steps:
     - bitrise-run:
-        run_if: |-
-          {{ or (enveq "IS_LATEST_STACK_XCODE" "true") (not .IsCI) }}
         inputs:
         - workflow_id: utility_test_start_rosetta
         - bitrise_config_path: ./e2e/bitrise.yml
