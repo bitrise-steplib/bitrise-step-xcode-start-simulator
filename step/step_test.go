@@ -23,7 +23,7 @@ func Test_GivenBootOnlyConfig_WhenBoot_ThenSuccessfullyBoots(t *testing.T) {
 			simulatorManager: simulatorManager,
 		}
 		simulator = destination.Device{
-			ID:       udid,
+			UDID:     udid,
 			Platform: "iOS Simulator",
 			Name:     "Bitrise iOS default",
 			OS:       "11",
@@ -62,7 +62,7 @@ func Test_GivenBootOnlyConfig_WhenSimulatorBootFails_ThenItReturnsError(t *testi
 			simulatorManager: simulatorManager,
 		}
 		simulator = destination.Device{
-			ID:       udid,
+			UDID:     udid,
 			Platform: "iOS Simulator",
 			Name:     "Bitrise iOS default",
 			OS:       "11",
@@ -104,7 +104,7 @@ func Test_GivenWaitForBootConfig_WhenWaitForBootFails_ThenReturnsTimeoutError(t 
 			simulatorManager: simulatorManager,
 		}
 		simulator = destination.Device{
-			ID:       udid,
+			UDID:     udid,
 			Platform: "iOS Simulator",
 			Name:     "Bitrise iOS default",
 			OS:       "11",
