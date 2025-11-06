@@ -37,11 +37,13 @@ website: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator
 source_code_url: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator
 support_url: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator/issues
 project_type_tags:
-- ios
-- react-native
-- flutter
 - cordova
+- flutter
 - ionic
+- ios
+- kotlin-multiplatform
+- macos
+- react-native
 type_tags:
 - utility
 is_always_run: false
