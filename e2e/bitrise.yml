@@ -6,6 +6,7 @@ workflows:
     envs:
     - DESTINATION: platform=iOS Simulator,name=Bitrise iOS default,OS=latest
     - TIMEOUT: 90
+    - ERASE_SIM: "yes"
     after_run:
     - _run
     - _check_outputs
@@ -51,6 +52,7 @@ workflows:
     envs:
     - DESTINATION: platform=visionOS Simulator,name=Apple Vision Pro,OS=latest
     - TIMEOUT: 90
+    - ERASE_SIM: "no"
     after_run:
     - _run
     - _check_outputs
@@ -59,6 +61,7 @@ workflows:
     envs:
     - DESTINATION: platform=iOS Simulator,name=Bitrise iOS default,OS=latest,arch=x86_64
     - TIMEOUT: 300
+    - ERASE_SIM: "no"
     after_run:
     - _run
     - _check_outputs
@@ -67,6 +70,7 @@ workflows:
     envs:
     - DESTINATION: platform=iOS Simulator,name=iPhone 11 Pro Max,OS=latest
     - TIMEOUT: 0
+    - ERASE_SIM: "no"
     after_run:
     - _run
     - _check_outputs
@@ -76,7 +80,7 @@ workflows:
     - path::./:
         inputs:
         - destination: $DESTINATION
-        - reset: "no"
+        - reset: $ERASE_SIM
         - wait_for_boot_timeout: $TIMEOUT
         - verbose_log: "yes"
     - script:

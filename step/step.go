@@ -74,7 +74,7 @@ func (s SimulatorStarter) getSimulatorForDestination(destinationSpecifier string
 	}
 
 	s.logger.Infof("Simulator info")
-	s.logger.Printf("* simulator_name: %s, version: %s, UDID: %s, status: %s", device.Name, device.OS, device.ID, device.Status)
+	s.logger.Printf("* simulator_name: %s, version: %s, UDID: %s, status: %s", device.Name, device.OS, device.UDID, device.State)
 
 	return device, nil
 }
@@ -152,14 +152,13 @@ func (s SimulatorStarter) prepareSimulator(simulator destination.Device, waitFor
 		s.logger.Warnf("Failed to apply simulator boot workaround: %s", err)
 	}
 
-	UDID := simulator.ID
 	if shouldReset {
 		s.logger.Println()
 		s.logger.Donef("Erasing simulator...")
-		if err := s.simulatorManager.Shutdown(UDID); err != nil {
+		if err := s.simulatorManager.Shutdown(simulator.UDID); err != nil {
 			return err
 		}
-		if err := s.simulatorManager.Erase(UDID); err != nil {
+		if err := s.simulatorManager.Erase(simulator.UDID); err != nil {
 			return err
 		}
 	}
@@ -183,7 +182,7 @@ func (s SimulatorStarter) prepareSimulator(simulator destination.Device, waitFor
 			s.logger.Warnf("Detecting boot completion is not working with visionOS yet, skipping...")
 		} else {
 			timeout := time.Duration(waitForBootTimeout) * time.Second
-			if err := s.simulatorManager.WaitForBootFinished(UDID, timeout); err != nil {
+			if err := s.simulatorManager.WaitForBootFinished(simulator.UDID, timeout); err != nil {
 				s.logger.Errorf("%s", err)
 				return errTimeout
 			}
