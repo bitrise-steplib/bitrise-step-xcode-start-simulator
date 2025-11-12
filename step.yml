@@ -42,7 +42,6 @@ project_type_tags:
 - ionic
 - ios
 - kotlin-multiplatform
-- macos
 - react-native
 type_tags:
 - utility
