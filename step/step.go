@@ -19,10 +19,13 @@ const (
 	simulatorResultStatusHanged  = "hanged"
 )
 
+const appearanceUnchanged = "unchanged"
+
 var errTimeout = errors.New("simulator boot timed out")
 
 type Input struct {
 	Destination string `env:"destination,required"`
+	Appearance  string `env:"appearance,opt[unchanged,light,dark]"`
 	// Debugging
 	IsVerboseLog       bool `env:"verbose_log,opt[yes,no]"`
 	WaitForBootTimeout int  `env:"wait_for_boot_timeout,required"`
@@ -38,6 +41,7 @@ type Config struct {
 type Result struct {
 	SimulatorStatus string
 	Destination     string
+	UDID            string
 }
 
 type SimulatorStarter struct {
@@ -105,7 +109,7 @@ func (s SimulatorStarter) InstallDependencies() error {
 }
 
 func (s SimulatorStarter) Run(config Config) (Result, error) {
-	err := s.prepareSimulator(config.Simulator, config.WaitForBootTimeout, config.ShouldReset)
+	err := s.prepareSimulator(config.Simulator, config.WaitForBootTimeout, config.ShouldReset, config.Appearance)
 
 	simulatorStatus := simulatorResultStatusSuccess
 	if err != nil {
@@ -121,6 +125,7 @@ func (s SimulatorStarter) Run(config Config) (Result, error) {
 	return Result{
 		SimulatorStatus: simulatorStatus,
 		Destination:     exportedDestination,
+		UDID:            config.Simulator.ID,
 	}, err
 }
 
@@ -128,6 +133,7 @@ func (s SimulatorStarter) ExportOutputs(result Result) error {
 	const (
 		simulatorStatusKey = "BITRISE_SIMULATOR_STATUS"
 		destinationKey     = "BITRISE_XCODE_DESTINATION"
+		udidKey            = "BITRISE_SIMULATOR_UDID"
 	)
 
 	s.logger.Println()
@@ -143,10 +149,15 @@ func (s SimulatorStarter) ExportOutputs(result Result) error {
 		return err
 	}
 
+	s.logger.Infof("Output %s = %s", udidKey, result.UDID)
+	if err := s.stepenvRepository.Set(udidKey, result.UDID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (s SimulatorStarter) prepareSimulator(simulator destination.Device, waitForBootTimeout int, shouldReset bool) error {
+func (s SimulatorStarter) prepareSimulator(simulator destination.Device, waitForBootTimeout int, shouldReset bool, appearance string) error {
 	err := s.simulatorManager.ResetLaunchServices()
 	if err != nil {
 		s.logger.Warnf("Failed to apply simulator boot workaround: %s", err)
@@ -156,8 +167,13 @@ func (s SimulatorStarter) prepareSimulator(simulator destination.Device, waitFor
 	if shouldReset {
 		s.logger.Println()
 		s.logger.Donef("Erasing simulator...")
-		if err := s.simulatorManager.Shutdown(UDID); err != nil {
-			return err
+		// simulator.Manager.Shutdown fails on an already shut down device: it tolerates
+		// `simctl shutdown` exit code 149 via go-utils v1 errorutil, which does not recognize
+		// the wrapped errors of the go-utils v2 command factory it is used with.
+		if simulator.Status != "Shutdown" {
+			if err := s.simulatorManager.Shutdown(UDID); err != nil {
+				return err
+			}
 		}
 		if err := s.simulatorManager.Erase(UDID); err != nil {
 			return err
@@ -193,6 +209,24 @@ func (s SimulatorStarter) prepareSimulator(simulator destination.Device, waitFor
 		s.logger.TDonef("Successfully started simulator.")
 	} else {
 		s.logger.Printf("Not waiting for the simulator to finish booting (timeout not set).")
+	}
+
+	if appearance != "" && appearance != appearanceUnchanged {
+		s.logger.Println()
+		s.logger.TDonef("Setting simulator appearance to %s...", appearance)
+		if err := s.setAppearance(UDID, appearance); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s SimulatorStarter) setAppearance(udid string, appearance string) error {
+	cmd := s.commandFactory.Create("xcrun", []string{"simctl", "ui", udid, "appearance", appearance}, nil)
+	s.logger.Debugf("$ %s", cmd.PrintableCommandArgs())
+	if out, err := cmd.RunAndReturnTrimmedCombinedOutput(); err != nil {
+		return fmt.Errorf("failed to set simulator appearance to %s: %s: %w", appearance, out, err)
 	}
 
 	return nil

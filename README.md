@@ -39,6 +39,14 @@ It allows two use cases:
       - api_token: $INSERT_RESTART_TRIGGER_TOKEN
       - workflow_id: insert_workflow
   ```
+
+* Pin a tool that resolves simulators by name (such as fastlane scan) to the exact prebooted device via the `BITRISE_SIMULATOR_UDID` output:
+  ```ruby
+  scan(
+    scheme: "MyApp",
+    destination: "platform=iOS Simulator,id=#{ENV['BITRISE_SIMULATOR_UDID']}"
+  )
+  ```
 </details>
 
 ## 🧩 Get started
@@ -75,6 +83,18 @@ Boot Rosetta Simulator and use it in the xcode-test Step:
     - xcodebuild_options: -verbose -parallel-testing-enabled NO  ARCHS=x86_64
 ```
 
+Boot a simulator in dark mode and pin fastlane scan (or any tool that resolves simulators by name) to the exact prebooted device:
+```yaml
+- xcode-start-simulator:
+    inputs:
+    - destination: platform=iOS Simulator,name=Bitrise iOS default,OS=latest
+    - appearance: dark
+    - wait_for_boot_timeout: 90
+- fastlane:
+    inputs:
+    - lane: ui_tests # in the Fastfile: scan(destination: "platform=iOS Simulator,id=#{ENV['BITRISE_SIMULATOR_UDID']}")
+```
+
 Detect if simulator timed out and restart the build:
 ```yaml
 - xcode-start-simulator:
@@ -97,6 +117,7 @@ Detect if simulator timed out and restart the build:
 | Key | Description | Flags | Default |
 | --- | --- | --- | --- |
 | `destination` | Destination specifier describes the simulator device to be started.  The input value uses the same format as xcodebuild's `-destination` option. | required | `platform=iOS Simulator,name=iPhone 8 Plus,OS=latest` |
+| `appearance` | If set to `light` or `dark`, sets the simulator's UI appearance (light or dark mode) after boot, using `xcrun simctl ui <UDID> appearance <value>`.  Use `unchanged` (the default) to keep the simulator's current appearance. | required | `unchanged` |
 | `wait_for_boot_timeout` | When larger than 0, will wait for the simulator boot to complete.  Setting this value to an int larger than 0 makes it possible to detect hangs or timeouts when booting simulator by waiting for the simulator to boot before this step completes. If a timeout occurs, the `BITRISE_SIMULATOR_STATUS` output will be set to `hanged`. The recommended value is 90.  Using `0` (the default) enables the Simulator boot to occur in parallel to other Steps. | required | `0` |
 | `verbose_log` | If this input is set, the Step will print additional logs for debugging. | required | `no` |
 | `reset` | If enabled, will shutdown and erase a simulator's contents and settings.  This option is not needed when starting from a clean state on a CI build. It may be used when running testing multiple apps on the same simulator or for making sure that the simulator is indeed in a clean state when an app fails to install due to an unexpected issue.  When enabled erasing contents takes about a second. | required | `no` |
@@ -109,6 +130,7 @@ Detect if simulator timed out and restart the build:
 | --- | --- |
 | `BITRISE_SIMULATOR_STATUS` | The status of the simulator, will be set to `booted`, `failed` or `hanged`.  It can be used to trigger a new build conditionally:  ``` is_always_run: true run_if: '{{enveq "BITRISE_SIMULATOR_STATUS" "hanged"}}' ```  |
 | `BITRISE_XCODE_DESTINATION` | Device destination specifier  The destination specifer provided in the `destination` Input. It can be used as Input of other Steps, to avoid duplication. |
+| `BITRISE_SIMULATOR_UDID` | The UDID of the simulator device the Step resolved and booted.  Use it to pin later Steps and tools to this exact device — an `id=` destination is unambiguous even when multiple devices share the same name (for example when the same device name exists under multiple installed runtimes). For example with fastlane scan:  ``` scan(   scheme: "MyApp",   destination: "platform=iOS Simulator,id=#{ENV['BITRISE_SIMULATOR_UDID']}" ) ``` |
 </details>
 
 ## 🙋 Contributing

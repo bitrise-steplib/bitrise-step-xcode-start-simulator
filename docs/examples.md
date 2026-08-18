@@ -26,6 +26,18 @@ Boot Rosetta Simulator and use it in the xcode-test Step:
     - xcodebuild_options: -verbose -parallel-testing-enabled NO  ARCHS=x86_64
 ```
 
+Boot a simulator in dark mode and pin fastlane scan (or any tool that resolves simulators by name) to the exact prebooted device:
+```yaml
+- xcode-start-simulator:
+    inputs:
+    - destination: platform=iOS Simulator,name=Bitrise iOS default,OS=latest
+    - appearance: dark
+    - wait_for_boot_timeout: 90
+- fastlane:
+    inputs:
+    - lane: ui_tests # in the Fastfile: scan(destination: "platform=iOS Simulator,id=#{ENV['BITRISE_SIMULATOR_UDID']}")
+```
+
 Detect if simulator timed out and restart the build:
 ```yaml
 - xcode-start-simulator:
