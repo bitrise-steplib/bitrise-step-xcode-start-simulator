@@ -6,6 +6,7 @@ workflows:
     envs:
     - DESTINATION: platform=iOS Simulator,name=Bitrise iOS default,OS=latest
     - TIMEOUT: 90
+    - APPEARANCE: dark
     after_run:
     - _run
     - _check_outputs
@@ -38,11 +39,26 @@ workflows:
         - bitrise_config_path: ./e2e/bitrise.yml
 
   test_start_rosetta:
-    description: Rosetta Simulator requires Xcode 14.3+.
+    description: |-
+      Rosetta Simulator requires Xcode 14.3+ and an x86_64-capable iOS runtime.
+      Newer iOS runtimes (26.5+) are arm64-only, so support is probed instead of assumed.
     steps:
+    - script:
+        title: Test if the latest iOS runtime supports x86_64 (Rosetta)
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+            if xcrun simctl list runtimes --json \
+               | jq -e '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | max_by(.version | split(".") | map(tonumber)) | (.supportedArchitectures // []) | index("x86_64")' > /dev/null; then
+              ROSETTA_SIM_AVAILABLE=true
+            else
+              ROSETTA_SIM_AVAILABLE=false
+            fi
+            envman add --key ROSETTA_SIM_AVAILABLE --value $ROSETTA_SIM_AVAILABLE
     - bitrise-run:
         run_if: |-
-          {{ or (enveq "IS_LATEST_STACK_XCODE" "true") (not .IsCI) }}
+          {{enveq "ROSETTA_SIM_AVAILABLE" "true"}}
         inputs:
         - workflow_id: utility_test_start_rosetta
         - bitrise_config_path: ./e2e/bitrise.yml
@@ -51,6 +67,7 @@ workflows:
     envs:
     - DESTINATION: platform=visionOS Simulator,name=Apple Vision Pro,OS=latest
     - TIMEOUT: 90
+    - APPEARANCE: unchanged
     after_run:
     - _run
     - _check_outputs
@@ -59,6 +76,7 @@ workflows:
     envs:
     - DESTINATION: platform=iOS Simulator,name=Bitrise iOS default,OS=latest,arch=x86_64
     - TIMEOUT: 300
+    - APPEARANCE: unchanged
     after_run:
     - _run
     - _check_outputs
@@ -67,6 +85,7 @@ workflows:
     envs:
     - DESTINATION: platform=iOS Simulator,name=iPhone 11 Pro Max,OS=latest
     - TIMEOUT: 0
+    - APPEARANCE: light
     after_run:
     - _run
     - _check_outputs
@@ -76,9 +95,20 @@ workflows:
     - path::./:
         inputs:
         - destination: $DESTINATION
+        - appearance: $APPEARANCE
         - reset: "no"
         - wait_for_boot_timeout: $TIMEOUT
         - verbose_log: "yes"
+    - script:
+        title: Verify simulator appearance
+        run_if: |-
+          {{not (enveq "APPEARANCE" "unchanged")}}
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+            actual=$(xcrun simctl ui "$BITRISE_SIMULATOR_UDID" appearance)
+            test "$actual" = "$APPEARANCE"
     - script:
         title: Shutdown running simulator
         inputs:
@@ -92,6 +122,7 @@ workflows:
         - envs: |-
             BITRISE_SIMULATOR_STATUS
             BITRISE_XCODE_DESTINATION
+            BITRISE_SIMULATOR_UDID
         - files:
         - dirs:
         - deploy_dir:

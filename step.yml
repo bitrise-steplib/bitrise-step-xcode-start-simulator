@@ -33,6 +33,14 @@ description: |-
         - api_token: $INSERT_RESTART_TRIGGER_TOKEN
         - workflow_id: insert_workflow
     ```
+
+  * Pin a tool that resolves simulators by name (such as fastlane scan) to the exact prebooted device via the `BITRISE_SIMULATOR_UDID` output:
+    ```ruby
+    scan(
+      scheme: "MyApp",
+      destination: "platform=iOS Simulator,id=#{ENV['BITRISE_SIMULATOR_UDID']}"
+    )
+    ```
 website: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator
 source_code_url: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator
 support_url: https://github.com/bitrise-steplib/bitrise-step-xcode-start-simulator/issues
@@ -62,6 +70,20 @@ inputs:
       Destination specifier describes the simulator device to be started.
 
       The input value uses the same format as xcodebuild's `-destination` option.
+    is_required: true
+
+- appearance: unchanged
+  opts:
+    title: Simulator UI appearance
+    summary: If set to `light` or `dark`, sets the simulator's UI appearance after boot.
+    description: |-
+      If set to `light` or `dark`, sets the simulator's UI appearance (light or dark mode) after boot, using `xcrun simctl ui <UDID> appearance <value>`.
+
+      Use `unchanged` (the default) to keep the simulator's current appearance.
+    value_options:
+    - unchanged
+    - light
+    - dark
     is_required: true
 
 # Debugging
@@ -133,3 +155,18 @@ outputs:
       Device destination specifier
 
       The destination specifer provided in the `destination` Input. It can be used as Input of other Steps, to avoid duplication.
+
+- BITRISE_SIMULATOR_UDID:
+  opts:
+    title: UDID of the started simulator
+    description: |-
+      The UDID of the simulator device the Step resolved and booted.
+
+      Use it to pin later Steps and tools to this exact device — an `id=` destination is unambiguous even when multiple devices share the same name (for example when the same device name exists under multiple installed runtimes). For example with fastlane scan:
+
+      ```
+      scan(
+        scheme: "MyApp",
+        destination: "platform=iOS Simulator,id=#{ENV['BITRISE_SIMULATOR_UDID']}"
+      )
+      ```
