@@ -37,28 +37,10 @@ workflows:
         - workflow_id: utility_test_start_visionos
         - bitrise_config_path: ./e2e/bitrise.yml
 
-  test_start_rosetta:
-    description: Rosetta Simulator requires Xcode 14.3+.
-    steps:
-    - bitrise-run:
-        run_if: |-
-          {{ or (enveq "IS_LATEST_STACK_XCODE" "true") (not .IsCI) }}
-        inputs:
-        - workflow_id: utility_test_start_rosetta
-        - bitrise_config_path: ./e2e/bitrise.yml
-
   utility_test_start_visionos:
     envs:
     - DESTINATION: platform=visionOS Simulator,name=Apple Vision Pro,OS=latest
     - TIMEOUT: 90
-    after_run:
-    - _run
-    - _check_outputs
-
-  utility_test_start_rosetta:
-    envs:
-    - DESTINATION: platform=iOS Simulator,name=Bitrise iOS default,OS=latest,arch=x86_64
-    - TIMEOUT: 300
     after_run:
     - _run
     - _check_outputs

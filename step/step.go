@@ -74,7 +74,7 @@ func (s SimulatorStarter) getSimulatorForDestination(destinationSpecifier string
 	}
 
 	s.logger.Infof("Simulator info")
-	s.logger.Printf("* simulator_name: %s, version: %s, UDID: %s, status: %s", device.Name, device.OS, device.ID, device.Status)
+	s.logger.Printf("* simulator_name: %s, version: %s, UDID: %s, status: %s", device.Name, device.OS, device.UDID, device.State)
 
 	return device, nil
 }
@@ -147,12 +147,7 @@ func (s SimulatorStarter) ExportOutputs(result Result) error {
 }
 
 func (s SimulatorStarter) prepareSimulator(simulator destination.Device, waitForBootTimeout int, shouldReset bool) error {
-	err := s.simulatorManager.ResetLaunchServices()
-	if err != nil {
-		s.logger.Warnf("Failed to apply simulator boot workaround: %s", err)
-	}
-
-	UDID := simulator.ID
+	UDID := simulator.UDID
 	if shouldReset {
 		s.logger.Println()
 		s.logger.Donef("Erasing simulator...")
