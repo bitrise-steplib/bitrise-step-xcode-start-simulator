@@ -49,6 +49,16 @@ workflows:
     envs:
     - DESTINATION: platform=iOS Simulator,name=iPhone 11 Pro Max,OS=latest
     - TIMEOUT: 0
+    steps:
+    - script:
+        title: Use the default device on Xcode 27.1
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+            if xcodebuild -version | grep -q "^Xcode 27\.1"; then
+              envman add --key DESTINATION --value "platform=iOS Simulator,name=Bitrise iOS default,OS=latest"
+            fi
     after_run:
     - _run
     - _check_outputs
