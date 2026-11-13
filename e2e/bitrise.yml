@@ -50,6 +50,9 @@ workflows:
     - DESTINATION: platform=iOS Simulator,name=iPhone 11 Pro Max,OS=latest
     - TIMEOUT: 0
     steps:
+    # Workaround: the iOS 27.1 simulator runtime (the latest on Xcode 27.1) only supports the iPhone Duo,
+    # so iPhone 11 Pro Max with OS=latest fails with "runtimes (iOS-27-1) are incompatible with device type".
+    # Remove once the osx-xcode-27.1.x stack is retired.
     - script:
         title: Use the default device on Xcode 27.1
         inputs:
